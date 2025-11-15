@@ -60,28 +60,35 @@ A full-stack application for managing meeting summaries with zone-based attendee
 
 1. Create a new Google Sheets spreadsheet
 2. Name it "Meeting Summary Data" (or any name you prefer)
-3. Create two sheets:
+3. Create the following required sheets:
 
    **Sheet 1: ZoneData**
    - Column A: ZoneId
    - Column B: ZoneName
    - Column C: AttendeeName
+   - Column D: Role (role of the person in the secretariat)
    - Add your 17 zones and their attendees (one row per attendee per zone)
 
    Example:
    ```
-   ZoneId | ZoneName        | AttendeeName
-   1      | Zone 1          | John Doe
-   1      | Zone 1          | Jane Smith
-   2      | Zone 2          | Bob Johnson
+   ZoneId | ZoneName        | AttendeeName | Role
+   1      | Zone 1          | John Doe     | Secretary
+   1      | Zone 1          | Jane Smith   | Member
+   2      | Zone 2          | Bob Johnson | Coordinator
    ```
 
-   **Sheet 2: MeetingSummaries**
-   - Column A: MeetingId (auto-generated)
-   - Column B: ZoneName
-   - Column C: Date
-   - Column D: Minutes (JSON array)
-   - Column E: Attendance (JSON array)
+   **Sheet 2: Agenda**
+   - Column A: AgendaItem (one agenda item per row, starting from row 2)
+   - Row 1 can be a header row (optional)
+   - Example:
+   ```
+   AgendaItem
+   Budget Discussion
+   Project Review
+   Team Updates
+   ```
+
+   **Note**: Week-based meeting sheets (e.g., `Nov19`, `Nov26`, `Dec02`) are created automatically when meetings are saved. You don't need to create them manually.
 
 4. Share the spreadsheet with the service account email:
    - Click "Share" button
@@ -266,10 +273,13 @@ Save meeting summary.
   "message": "Meeting summary saved successfully",
   "data": {
     "meetingId": "MEET-1234567890",
+    "weekSheet": "Nov19",
     "rowNumber": 1
   }
 }
 ```
+
+**Note**: The `weekSheet` field indicates which week sheet the meeting was saved to. Sheets are named based on the Wednesday of the week (e.g., `Nov19` for the week starting November 19).
 
 ## Troubleshooting
 
@@ -286,8 +296,9 @@ Save meeting summary.
    - Check that the "ZoneData" sheet exists and has data
 
 3. **"Failed to save meeting summary"**
-   - Verify the "MeetingSummaries" sheet exists
    - Ensure the service account has Editor permissions on the spreadsheet
+   - The week-based sheet will be created automatically - no manual setup needed
+   - Check that the date format is correct (YYYY-MM-DD)
 
 ### Frontend Issues
 

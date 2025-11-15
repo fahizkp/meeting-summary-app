@@ -110,6 +110,47 @@ router.get('/agendas', async (req, res) => {
 });
 
 /**
+ * GET /api/meetings/:meetingId/report
+ * Generate formatted report for a meeting
+ */
+router.get('/meetings/:meetingId/report', async (req, res) => {
+  if (!googleSheetsService) {
+    return res.status(500).json({
+      success: false,
+      error: 'Google Sheets service not initialized',
+      message: 'Please check your .env file and ensure all required environment variables are set',
+    });
+  }
+  
+  try {
+    const { meetingId } = req.params;
+    const meetingData = await googleSheetsService.getMeetingById(meetingId);
+
+    if (!meetingData) {
+      return res.status(404).json({
+        success: false,
+        error: 'Meeting not found',
+      });
+    }
+
+    const report = googleSheetsService.generateReport(meetingData);
+
+    res.json({
+      success: true,
+      meetingData,
+      report,
+    });
+  } catch (error) {
+    console.error('Error in /api/meetings/:meetingId/report:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate report',
+      message: error.message,
+    });
+  }
+});
+
+/**
  * POST /api/meetings
  * Save meeting summary
  */

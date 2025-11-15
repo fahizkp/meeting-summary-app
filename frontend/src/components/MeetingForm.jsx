@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { getZones, getAttendees, getAgendas, saveMeeting } from '../services/api';
+import { getZones, getAttendees, getAgendas, saveMeeting, getMeetingReport } from '../services/api';
 import ZoneSelector from './ZoneSelector';
 import AttendeeList from './AttendeeList';
 import MeetingMinutes from './MeetingMinutes';
 import AgendaSelector from './AgendaSelector';
 import QHLSTable from './QHLSTable';
+import jsPDF from 'jspdf';
 
 const MeetingForm = () => {
   const [zones, setZones] = useState([]);
@@ -23,6 +24,9 @@ const MeetingForm = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [savedMeetingId, setSavedMeetingId] = useState(null);
+  const [reportData, setReportData] = useState(null);
+  const [showReportPreview, setShowReportPreview] = useState(false);
 
   // Fetch zones and agendas on component mount
   useEffect(() => {
@@ -166,6 +170,132 @@ const MeetingForm = () => {
     }
   };
 
+  const formatReportForWhatsApp = (report, meetingData) => {
+    const lines = [
+      `*മീറ്റിംഗ് റിപ്പോർട്ട്*`,
+      `━━━━━━━━━━━━━━━━━━━━`,
+      `*മേഖല:* ${meetingData.zoneName}`,
+      `*തീയതി:* ${meetingData.date}`,
+      meetingData.startTime ? `*ആരംഭ സമയം:* ${meetingData.startTime}` : '',
+      meetingData.endTime ? `*അവസാന സമയം:* ${meetingData.endTime}` : '',
+      ``,
+      `*പങ്കെടുക്കുന്നവർ:*`,
+      report.attendees || 'ആരുമില്ല',
+      ``,
+      `*ലീവ് ആയവർ:*`,
+      report.leaveAayavar || 'ആരുമില്ല',
+      ``,
+      `*എജണ്ട:*`,
+      report.agenda || 'എജണ്ടയില്ല',
+      ``,
+      `*തീരുമാനങ്ങൾ:*`,
+      report.minutes || 'തീരുമാനങ്ങളില്ല',
+      ``,
+      `*QHLS Status:*`,
+      report.qhlsStatus || 'QHLS ഡാറ്റയില്ല',
+    ].filter(line => line !== '').join('\n');
+    
+    return lines;
+  };
+
+  const handleCopyToWhatsApp = () => {
+    if (!reportData) return;
+    
+    const whatsappText = formatReportForWhatsApp(reportData.report, reportData.meetingData);
+    
+    navigator.clipboard.writeText(whatsappText).then(() => {
+      alert('വാട്സാപ്പിലേക്ക് കോപ്പി ചെയ്തു! (Copied to WhatsApp!)');
+    }).catch(() => {
+      alert('കോപ്പി ചെയ്യുന്നതിൽ പിശക് (Error copying)');
+    });
+  };
+
+  const handleSaveAsPDF = () => {
+    if (!reportData) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let yPosition = 20;
+    const margin = 20;
+    const lineHeight = 7;
+    const maxWidth = pageWidth - (margin * 2);
+
+    // Helper function to add text with word wrap
+    const addText = (text, fontSize = 12, isBold = false, color = [0, 0, 0]) => {
+      doc.setFontSize(fontSize);
+      doc.setTextColor(color[0], color[1], color[2]);
+      if (isBold) {
+        doc.setFont(undefined, 'bold');
+      } else {
+        doc.setFont(undefined, 'normal');
+      }
+
+      const lines = doc.splitTextToSize(text, maxWidth);
+      
+      if (yPosition + (lines.length * lineHeight) > pageHeight - margin) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
+      lines.forEach((line) => {
+        doc.text(line, margin, yPosition);
+        yPosition += lineHeight;
+      });
+      
+      yPosition += 3; // Add spacing after text block
+    };
+
+    // Title
+    addText('മീറ്റിംഗ് റിപ്പോർട്ട്', 16, true, [0, 0, 0]);
+    yPosition += 5;
+
+    // Meeting Details
+    addText(`മേഖല: ${reportData.meetingData.zoneName}`, 12, true);
+    addText(`തീയതി: ${reportData.meetingData.date}`, 12);
+    if (reportData.meetingData.startTime) {
+      addText(`ആരംഭ സമയം: ${reportData.meetingData.startTime}`, 12);
+    }
+    if (reportData.meetingData.endTime) {
+      addText(`അവസാന സമയം: ${reportData.meetingData.endTime}`, 12);
+    }
+    yPosition += 5;
+
+    // Attendees
+    addText('പങ്കെടുക്കുന്നവർ:', 12, true);
+    addText(reportData.report.attendees || 'ആരുമില്ല', 11);
+    yPosition += 5;
+
+    // Leave attendees
+    addText('ലീവ് ആയവർ:', 12, true);
+    addText(reportData.report.leaveAayavar || 'ആരുമില്ല', 11);
+    yPosition += 5;
+
+    // Agenda
+    addText('എജണ്ട:', 12, true);
+    addText(reportData.report.agenda || 'എജണ്ടയില്ല', 11);
+    yPosition += 5;
+
+    // Minutes
+    addText('തീരുമാനങ്ങൾ:', 12, true);
+    addText(reportData.report.minutes || 'തീരുമാനങ്ങളില്ല', 11);
+    yPosition += 5;
+
+    // QHLS
+    addText('QHLS Status:', 12, true);
+    addText(reportData.report.qhlsStatus || 'QHLS ഡാറ്റയില്ല', 11);
+
+    // Save PDF
+    const fileName = `Meeting_Report_${reportData.meetingData.zoneName}_${reportData.meetingData.date}.pdf`;
+    doc.save(fileName);
+  };
+
+  const handleClosePreview = () => {
+    setShowReportPreview(false);
+    setReportData(null);
+    setSavedMeetingId(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -214,7 +344,22 @@ const MeetingForm = () => {
       const response = await saveMeeting(meetingData);
 
       if (response.success) {
+        const meetingId = response.data?.meetingId || 'N/A';
+        const weekSheet = response.data?.weekSheet || 'N/A';
+        setSavedMeetingId(meetingId);
         setSuccess('മീറ്റിംഗ് സംഗ്രഹം വിജയകരമായി സേവ് ചെയ്തു! (Meeting summary saved successfully!)');
+        
+        // Fetch and display report
+        try {
+          const reportResponse = await getMeetingReport(meetingId);
+          if (reportResponse.success) {
+            setReportData(reportResponse);
+            setShowReportPreview(true);
+          }
+        } catch (err) {
+          console.error('Error fetching report:', err);
+        }
+        
         // Reset form
         setSelectedZone('');
         setMinutes(['']);
@@ -324,6 +469,69 @@ const MeetingForm = () => {
           </button>
         </div>
       </form>
+
+      {/* Report Preview Modal */}
+      {showReportPreview && reportData && (
+        <div className="report-preview-modal">
+          <div className="report-preview-content">
+            <div className="report-preview-header">
+              <h2>റിപ്പോർട്ട് പ്രിവ്യൂ (Report Preview)</h2>
+              <button onClick={handleClosePreview} className="close-button">×</button>
+            </div>
+            
+            <div className="report-preview-body">
+              <div className="report-section">
+                <h3>മീറ്റിംഗ് വിവരങ്ങൾ (Meeting Details)</h3>
+                <p><strong>മേഖല (Zone):</strong> {reportData.meetingData.zoneName}</p>
+                <p><strong>തീയതി (Date):</strong> {reportData.meetingData.date}</p>
+                {reportData.meetingData.startTime && (
+                  <p><strong>ആരംഭ സമയം (Start Time):</strong> {reportData.meetingData.startTime}</p>
+                )}
+                {reportData.meetingData.endTime && (
+                  <p><strong>അവസാന സമയം (End Time):</strong> {reportData.meetingData.endTime}</p>
+                )}
+              </div>
+
+              <div className="report-section">
+                <h3>പങ്കെടുക്കുന്നവർ:</h3>
+                <pre className="report-content">{reportData.report.attendees || 'ആരുമില്ല'}</pre>
+              </div>
+
+              <div className="report-section">
+                <h3>ലീവ് ആയവർ:</h3>
+                <pre className="report-content">{reportData.report.leaveAayavar || 'ആരുമില്ല'}</pre>
+              </div>
+
+              <div className="report-section">
+                <h3>എജണ്ട:</h3>
+                <pre className="report-content">{reportData.report.agenda || 'എജണ്ടയില്ല'}</pre>
+              </div>
+
+              <div className="report-section">
+                <h3>തീരുമാനങ്ങൾ:</h3>
+                <pre className="report-content">{reportData.report.minutes || 'തീരുമാനങ്ങളില്ല'}</pre>
+              </div>
+
+              <div className="report-section">
+                <h3>QHLS Status:</h3>
+                <pre className="report-content">{reportData.report.qhlsStatus || 'QHLS ഡാറ്റയില്ല'}</pre>
+              </div>
+            </div>
+
+            <div className="report-preview-actions">
+              <button onClick={handleCopyToWhatsApp} className="btn-secondary">
+                📱 വാട്സാപ്പിലേക്ക് കോപ്പി (Copy to WhatsApp)
+              </button>
+              <button onClick={handleSaveAsPDF} className="btn-success">
+                📄 PDF ആയി സേവ് (Save as PDF)
+              </button>
+              <button onClick={handleClosePreview} className="btn-secondary">
+                അടയ്ക്കുക (Close)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

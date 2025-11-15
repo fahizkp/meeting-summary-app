@@ -6,7 +6,7 @@
 - [ ] Google Cloud Project created
 - [ ] Google Sheets API enabled
 - [ ] Service Account created and key downloaded
-- [ ] Google Sheets spreadsheet created with ZoneData and MeetingSummaries sheets
+- [ ] Google Sheets spreadsheet created with ZoneData and Agenda sheets
 - [ ] Spreadsheet shared with service account email
 
 ## 5-Minute Setup
@@ -49,16 +49,18 @@ Open browser: `http://localhost:3000`
 - [ ] Column A: ZoneId
 - [ ] Column B: ZoneName  
 - [ ] Column C: AttendeeName
+- [ ] Column D: Role
 - [ ] Added all 17 zones
 - [ ] Added attendees for each zone (one row per attendee)
 
-### MeetingSummaries Sheet
-- [ ] Column A: MeetingId
-- [ ] Column B: ZoneName
-- [ ] Column C: Date
-- [ ] Column D: Minutes
-- [ ] Column E: Attendance
-- [ ] Sheet is empty (will be populated by app)
+### Agenda Sheet
+- [ ] Column A: AgendaItem (one item per row, starting from row 2)
+- [ ] Added agenda items
+
+### Week-Based Meeting Sheets
+- [ ] **Note**: Week sheets (e.g., `Nov19`, `Nov26`, `Dec02`) are created automatically
+- [ ] No manual setup needed - sheets are created when meetings are saved
+- [ ] Sheet names are based on the Wednesday of the week (format: `MMMDD`)
 
 ### Permissions
 - [ ] Spreadsheet shared with service account email
@@ -72,7 +74,7 @@ Open browser: `http://localhost:3000`
 4. Add absence reasons for absent attendees
 5. Add meeting minutes
 6. Submit form
-7. Check Google Sheets - new row should appear in MeetingSummaries
+7. Check Google Sheets - new row should appear in the week-specific sheet (e.g., `Nov19`, `Nov26`)
 
 ## Common Issues
 
@@ -90,6 +92,7 @@ Open browser: `http://localhost:3000`
 - Verify ZoneData sheet has correct column structure
 
 **Can't save meetings:**
-- Check MeetingSummaries sheet exists
+- Week sheets are created automatically - no manual setup needed
 - Verify service account has Editor permissions
+- Check that the date format is correct (YYYY-MM-DD)
 
