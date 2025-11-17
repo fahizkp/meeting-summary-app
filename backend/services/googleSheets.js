@@ -57,10 +57,35 @@ class GoogleSheetsService {
 
   initializeAuth() {
     try {
+      let privateKey = process.env.GOOGLE_SHEETS_PRIVATE_KEY || '';
+      
+      // Handle different private key formats
+      if (privateKey) {
+        // Remove surrounding quotes if present
+        privateKey = privateKey.replace(/^["']|["']$/g, '');
+        
+        // Replace literal \n with actual newlines
+        privateKey = privateKey.replace(/\\n/g, '\n');
+        
+        // If it's base64 encoded, decode it
+        if (!privateKey.includes('BEGIN PRIVATE KEY') && !privateKey.includes('BEGIN RSA PRIVATE KEY')) {
+          try {
+            privateKey = Buffer.from(privateKey, 'base64').toString('utf-8');
+          } catch (e) {
+            // Not base64, continue with original
+          }
+        }
+        
+        // Ensure proper newlines are present
+        if (!privateKey.includes('\n') && privateKey.includes('\\n')) {
+          privateKey = privateKey.replace(/\\n/g, '\n');
+        }
+      }
+      
       this.auth = new google.auth.GoogleAuth({
         credentials: {
           client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
-          private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+          private_key: privateKey,
         },
         scopes: ['https://www.googleapis.com/auth/spreadsheets'],
       });
@@ -68,6 +93,7 @@ class GoogleSheetsService {
       this.sheets = google.sheets({ version: 'v4', auth: this.auth });
     } catch (error) {
       console.error('Error initializing Google Sheets auth:', error);
+      console.error('Error details:', error.message);
       throw error;
     }
   }
