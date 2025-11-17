@@ -5,7 +5,7 @@ services:
     plan: free
     repo: https://github.com/fahizkp/meeting-summary-app
     branch: main
-    root: backend
+    rootDir : backend
     buildCommand: npm install
     startCommand: npm start
     autoDeploy: true
@@ -21,9 +21,9 @@ services:
     plan: free
     repo: https://github.com/fahizkp/meeting-summary-app
     branch: main
-    root: frontend
+    rootDir : frontend
     buildCommand: npm install && npm run build
-    publishPath: build
+    staticPublishPath: build
     autoDeploy: true
     envVars:
       - key: REACT_APP_API_URL
