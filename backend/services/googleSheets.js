@@ -83,23 +83,37 @@ class GoogleSheetsService {
       
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'ZoneData!A2:B', // Column A: ZoneId, Column B: ZoneName (headers in row 1, data starts from row 2)
+        range: 'ZoneData!A2:E', // Column A: ZoneId, B: ZoneName, E: Unit
       });
 
       const rows = response.data.values || [];
       const zonesMap = new Map();
 
-      // ZoneId is column A, ZoneName is column B
       rows.forEach((row) => {
-        if (row[0] && row[1]) {
-          zonesMap.set(row[0], row[1]);
+        const zoneId = row[0];
+        const zoneName = row[1];
+        const unit = row[4]?.trim();
+
+        if (!zoneId || !zoneName) {
+          return;
+        }
+
+        if (!zonesMap.has(zoneId)) {
+          zonesMap.set(zoneId, {
+            name: zoneName,
+            units: new Set(),
+          });
+        }
+
+        if (unit) {
+          zonesMap.get(zoneId).units.add(unit);
         }
       });
 
-      // Convert map to array of objects
-      const zones = Array.from(zonesMap.entries()).map(([id, name]) => ({
+      const zones = Array.from(zonesMap.entries()).map(([id, data]) => ({
         id,
-        name,
+        name: data.name,
+        units: Array.from(data.units),
       }));
 
       return zones;
@@ -273,6 +287,123 @@ class GoogleSheetsService {
       await this.createWeekSheet(sheetName);
     }
     return sheetName;
+  }
+
+  /**
+   * Get meeting data by meeting ID
+   */
+  async getMeetingById(meetingId) {
+    try {
+      if (!this.spreadsheetId) {
+        throw new Error('Spreadsheet ID is not configured');
+      }
+
+      // Get all sheets
+      const spreadsheet = await this.sheets.spreadsheets.get({
+        spreadsheetId: this.spreadsheetId,
+      });
+
+      const sheets = spreadsheet.data.sheets || [];
+      
+      // Search through all week sheets
+      for (const sheet of sheets) {
+        const sheetName = sheet.properties.title;
+        // Skip non-week sheets (ZoneData, Agenda, etc.)
+        if (sheetName === 'ZoneData' || sheetName === 'Agenda' || sheetName === 'MeetingSummaries') {
+          continue;
+        }
+
+        try {
+          const response = await this.sheets.spreadsheets.values.get({
+            spreadsheetId: this.spreadsheetId,
+            range: `${sheetName}!A2:I`, // Skip header row
+          });
+
+          const rows = response.data.values || [];
+          
+          for (const row of rows) {
+            if (row[0] === meetingId) {
+              // Found the meeting
+              return {
+                meetingId: row[0],
+                zoneName: row[1],
+                date: row[2],
+                startTime: row[3] || '',
+                endTime: row[4] || '',
+                agendas: row[5] ? JSON.parse(row[5]) : [],
+                minutes: row[6] ? JSON.parse(row[6]) : [],
+                attendance: row[7] ? JSON.parse(row[7]) : [],
+                qhls: row[8] ? JSON.parse(row[8]) : [],
+              };
+            }
+          }
+        } catch (error) {
+          // Continue searching other sheets
+          continue;
+        }
+      }
+
+      return null; // Meeting not found
+    } catch (error) {
+      console.error('Error fetching meeting:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate formatted report from meeting data
+   */
+  generateReport(meetingData) {
+    const { attendance, agendas, minutes, qhls } = meetingData;
+
+    // Separate present and leave attendees
+    const presentAttendees = [];
+    const leaveAttendees = [];
+
+    attendance.forEach((item) => {
+      const name = item.name;
+      const role = item.role ? ` (${item.role})` : '';
+      const fullName = `${name}${role}`;
+
+      if (item.status === 'present') {
+        presentAttendees.push(fullName);
+      } else if (item.status === 'leave') {
+        const reason = item.reason ? ` (${item.reason})` : '';
+        leaveAttendees.push(`${fullName}${reason}`);
+      }
+    });
+
+    // Format QHLS data
+    let qhlsReport = '';
+    if (qhls && qhls.length > 0) {
+      // Headings
+      const headings = 'യൂണിറ്റ്, ദിവസം, ഫാക്കൽറ്റി, പുരുഷൻ, സ്ത്രീ';
+      
+      // Data rows
+      const qhlsRows = qhls
+        .filter(row => row.unit || row.day || row.faculty || row.male || row.female)
+        .map(row => {
+          const unit = row.unit || '';
+          const day = row.day || '';
+          const faculty = row.faculty || '';
+          const male = row.male || '0';
+          const female = row.female || '0';
+          return `${unit}, ${day}, ${faculty}, ${male}, ${female}`;
+        });
+
+      qhlsReport = `${headings}\n${qhlsRows.join('\n')}`;
+    }
+
+    // Build report
+    const report = {
+      attendees: presentAttendees.join('\n'),
+      leaveAayavar: leaveAttendees.join('\n'),
+      agenda: agendas.join('\n'),
+      minutes: minutes.join('\n'),
+      qhlsStatus: qhlsReport,
+    };
+
+    return report;
   }
 
   /**

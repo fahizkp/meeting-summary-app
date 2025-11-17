@@ -29,3 +29,8 @@ export const saveMeeting = async (meetingData) => {
   return response.data;
 };
 
+export const getMeetingReport = async (meetingId) => {
+  const response = await api.get(`/api/meetings/${meetingId}/report`);
+  return response.data;
+};
+

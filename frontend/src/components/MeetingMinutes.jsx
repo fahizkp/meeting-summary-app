@@ -3,22 +3,23 @@ import React from 'react';
 const MeetingMinutes = ({ minutes, onMinutesChange, onAddMinute, onRemoveMinute }) => {
   return (
     <div className="form-group">
-      <label>മീറ്റിംഗ് മിനിറ്റുകൾ (Meeting Minutes):</label>
+      <label>മീറ്റിംഗ് തീരുമാനങ്ങൾ:</label>
       {minutes.map((minute, index) => (
         <div key={index} className="minute-item">
           <textarea
-            placeholder={`മിനിറ്റ് ${index + 1} (Minute ${index + 1})`}
+            placeholder={`തീരുമാനം ${index + 1}`}
             value={minute}
             onChange={(e) => onMinutesChange(index, e.target.value)}
             rows="3"
           />
           <button
             type="button"
-            className="btn-danger"
+            className="btn-danger icon-button"
             onClick={() => onRemoveMinute(index)}
             disabled={minutes.length === 1}
+            aria-label="തീരുമാനം നീക്കം ചെയ്യുക"
           >
-            നീക്കം ചെയ്യുക (Remove)
+            ×
           </button>
         </div>
       ))}
@@ -27,7 +28,7 @@ const MeetingMinutes = ({ minutes, onMinutesChange, onAddMinute, onRemoveMinute 
         className="add-button btn-secondary"
         onClick={onAddMinute}
       >
-        + മിനിറ്റ് ചേർക്കുക (Add Minute)
+        + തീരുമാനം ചേർക്കുക
       </button>
     </div>
   );

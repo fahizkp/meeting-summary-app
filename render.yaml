@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: meeting-summary-backend
+    env: node
+    plan: free
+    repo: https://github.com/fahizkp/meeting-summary-app
+    branch: main
+    root: backend
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+  - type: static
+    name: meeting-summary-frontend
+    env: static
+    plan: free
+    repo: https://github.com/fahizkp/meeting-summary-app
+    branch: main
+    root: frontend
+    buildCommand: npm install && npm run build
+    publishPath: build
+    autoDeploy: true
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://meeting-summary-backend.onrender.com
+

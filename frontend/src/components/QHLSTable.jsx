@@ -1,6 +1,10 @@
 import React from 'react';
 
-const QHLSTable = ({ qhlsData, onQHLSChange, onQHLSAdd, onQHLSRemove }) => {
+const QHLSTable = ({ qhlsData, onQHLSChange, availableUnits = [] }) => {
+  const filteredUnits = Array.isArray(availableUnits)
+    ? Array.from(new Set(availableUnits.filter((unit) => unit && unit.trim() !== '')))
+    : [];
+
   const handleFieldChange = (index, field, value) => {
     const updatedData = [...qhlsData];
     updatedData[index] = {
@@ -17,12 +21,11 @@ const QHLSTable = ({ qhlsData, onQHLSChange, onQHLSAdd, onQHLSRemove }) => {
         <table className="qhls-table">
           <thead>
             <tr>
-              <th>യൂണിറ്റ് (Unit)</th>
-              <th>ദിവസം (Day)</th>
-              <th>ഫാക്കൽറ്റി (Faculty)</th>
-              <th>പുരുഷൻ (Male)</th>
-              <th>സ്ത്രീ (Female)</th>
-              <th>പ്രവർത്തനങ്ങൾ (Actions)</th>
+              <th>യൂണിറ്റ്</th>
+              <th>ദിവസം</th>
+              <th>ഫാക്കൽറ്റി</th>
+              <th>പുരുഷന്മാർ</th>
+              <th>സ്ത്രീകൾ</th>
             </tr>
           </thead>
           <tbody>
@@ -31,9 +34,9 @@ const QHLSTable = ({ qhlsData, onQHLSChange, onQHLSAdd, onQHLSRemove }) => {
                 <td>
                   <input
                     type="text"
-                    value={row.unit || ''}
-                    onChange={(e) => handleFieldChange(index, 'unit', e.target.value)}
-                    placeholder="യൂണിറ്റ്"
+                    value={row.unit || filteredUnits[index] || ''}
+                    disabled
+                    style={{ minWidth: '200px' }}
                   />
                 </td>
                 <td>
@@ -70,27 +73,10 @@ const QHLSTable = ({ qhlsData, onQHLSChange, onQHLSAdd, onQHLSRemove }) => {
                     min="0"
                   />
                 </td>
-                <td>
-                  <button
-                    type="button"
-                    className="btn-danger"
-                    onClick={() => onQHLSRemove(index)}
-                    disabled={qhlsData.length === 1}
-                  >
-                    നീക്കം ചെയ്യുക
-                  </button>
-                </td>
               </tr>
             ))}
           </tbody>
         </table>
-        <button
-          type="button"
-          className="add-button btn-secondary"
-          onClick={onQHLSAdd}
-        >
-          + QHLS വരി ചേർക്കുക (Add QHLS Row)
-        </button>
       </div>
     </div>
   );
