@@ -27,5 +27,7 @@ services:
     autoDeploy: true
     envVars:
       - key: REACT_APP_API_URL
-        value: https://meeting-summary-backend.onrender.com
+        value: https://meeting-summary-app-m36y.onrender.com
+      - key: VITE_API_URL
+        value: https://meeting-summary-app-m36y.onrender.com
 
