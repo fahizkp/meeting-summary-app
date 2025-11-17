@@ -14,7 +14,8 @@ services:
       - key: NODE_ENV
         value: production
 
-  - type: static
+  - type: web
+    runtime: static
     name: meeting-summary-frontend
     env: static
     plan: free
