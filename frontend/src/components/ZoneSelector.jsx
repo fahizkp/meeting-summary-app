@@ -3,14 +3,14 @@ import React from 'react';
 const ZoneSelector = ({ zones, selectedZone, onZoneChange, loading }) => {
   return (
     <div className="form-group">
-      <label htmlFor="zone">മേഖല (Zone):</label>
+      <label htmlFor="zone">മണ്ഡലം (Zone):</label>
       <select
         id="zone"
         value={selectedZone || ''}
         onChange={(e) => onZoneChange(e.target.value)}
         disabled={loading || !zones.length}
       >
-        <option value="">മേഖല തിരഞ്ഞെടുക്കുക (Select Zone)</option>
+        <option value="">മണ്ഡലം തിരഞ്ഞെടുക്കുക (Select Zone)</option>
         {zones.map((zone) => (
           <option key={zone.id} value={zone.id}>
             {zone.name}

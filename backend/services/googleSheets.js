@@ -83,23 +83,37 @@ class GoogleSheetsService {
       
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'ZoneData!A2:B', // Column A: ZoneId, Column B: ZoneName (headers in row 1, data starts from row 2)
+        range: 'ZoneData!A2:E', // Column A: ZoneId, B: ZoneName, E: Unit
       });
 
       const rows = response.data.values || [];
       const zonesMap = new Map();
 
-      // ZoneId is column A, ZoneName is column B
       rows.forEach((row) => {
-        if (row[0] && row[1]) {
-          zonesMap.set(row[0], row[1]);
+        const zoneId = row[0];
+        const zoneName = row[1];
+        const unit = row[4]?.trim();
+
+        if (!zoneId || !zoneName) {
+          return;
+        }
+
+        if (!zonesMap.has(zoneId)) {
+          zonesMap.set(zoneId, {
+            name: zoneName,
+            units: new Set(),
+          });
+        }
+
+        if (unit) {
+          zonesMap.get(zoneId).units.add(unit);
         }
       });
 
-      // Convert map to array of objects
-      const zones = Array.from(zonesMap.entries()).map(([id, name]) => ({
+      const zones = Array.from(zonesMap.entries()).map(([id, data]) => ({
         id,
-        name,
+        name: data.name,
+        units: Array.from(data.units),
       }));
 
       return zones;

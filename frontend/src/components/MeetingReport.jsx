@@ -38,14 +38,14 @@ const MeetingReport = () => {
   const handleCopyReport = () => {
     if (!report) return;
 
-    const reportText = `പങ്കെടുക്കുന്നവർ:
+    const reportText = `പങ്കെടുത്തവർ:
 ${report.attendees || 'ആരുമില്ല'}
 
 ലീവ് ആയവർ:
 ${report.leaveAayavar || 'ആരുമില്ല'}
 
-എജണ്ട:
-${report.agenda || 'എജണ്ടയില്ല'}
+അജണ്ടകൾ:
+${report.agenda || 'അജണ്ടകളില്ല'}
 
 തീരുമാനങ്ങൾ:
 ${report.minutes || 'തീരുമാനങ്ങളില്ല'}
@@ -93,18 +93,18 @@ ${report.qhlsStatus || 'QHLS ഡാറ്റയില്ല'}`;
 
           <div className="report-section">
             <h2>മീറ്റിംഗ് വിവരങ്ങൾ (Meeting Details)</h2>
-            <p><strong>മേഖല (Zone):</strong> {meetingData.zoneName}</p>
+            <p><strong>മണ്ഡലം (Zone):</strong> {meetingData.zoneName}</p>
             <p><strong>തീയതി (Date):</strong> {meetingData.date}</p>
             {meetingData.startTime && (
-              <p><strong>ആരംഭ സമയം (Start Time):</strong> {meetingData.startTime}</p>
+              <p><strong>തുടങ്ങിയ സമയം (Start Time):</strong> {meetingData.startTime}</p>
             )}
             {meetingData.endTime && (
-              <p><strong>അവസാന സമയം (End Time):</strong> {meetingData.endTime}</p>
+              <p><strong>അവസാനിച്ച സമയം (End Time):</strong> {meetingData.endTime}</p>
             )}
           </div>
 
           <div className="report-section">
-            <h2>പങ്കെടുക്കുന്നവർ:</h2>
+            <h2>പങ്കെടുത്തവർ:</h2>
             <pre className="report-content">{report.attendees || 'ആരുമില്ല'}</pre>
           </div>
 
@@ -114,8 +114,8 @@ ${report.qhlsStatus || 'QHLS ഡാറ്റയില്ല'}`;
           </div>
 
           <div className="report-section">
-            <h2>എജണ്ട:</h2>
-            <pre className="report-content">{report.agenda || 'എജണ്ടയില്ല'}</pre>
+            <h2>അജണ്ടകൾ:</h2>
+            <pre className="report-content">{report.agenda || 'അജണ്ടകളില്ല'}</pre>
           </div>
 
           <div className="report-section">

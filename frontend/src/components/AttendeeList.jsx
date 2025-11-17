@@ -4,9 +4,9 @@ const AttendeeList = ({ attendees, attendance, onAttendanceChange, onAbsenceReas
   if (!attendees || attendees.length === 0) {
     return (
       <div className="form-group">
-        <label>പങ്കെടുക്കുന്നവർ (Attendees):</label>
+        <label>പങ്കെടുത്തവർ:</label>
         <p style={{ color: '#7f8c8d', fontStyle: 'italic' }}>
-          ദയവായി ഒരു മേഖല തിരഞ്ഞെടുക്കുക (Please select a zone)
+          ദയവായി ഒരു മണ്ഡലം തിരഞ്ഞെടുക്കുക (Please select a zone)
         </p>
       </div>
     );
@@ -14,7 +14,7 @@ const AttendeeList = ({ attendees, attendance, onAttendanceChange, onAbsenceReas
 
   return (
     <div className="form-group">
-      <label>പങ്കെടുക്കുന്നവർ (Attendees):</label>
+      <label>പങ്കെടുത്തവർ:</label>
       {attendees.map((attendee, index) => {
         const attendeeKey = `${attendee.name}_${attendee.role || ''}`;
         const currentAttendance = attendance[attendeeKey] || { status: 'present', reason: '' };
@@ -54,7 +54,7 @@ const AttendeeList = ({ attendees, attendance, onAttendanceChange, onAbsenceReas
                 <input
                   type="text"
                   className="absence-reason"
-                  placeholder="അഭാവത്തിന്റെ കാരണം (Reason for leave)"
+                  placeholder="ലീവ് കാരണം"
                   value={currentAttendance.reason || ''}
                   onChange={(e) => onAbsenceReasonChange(attendeeKey, e.target.value)}
                 />

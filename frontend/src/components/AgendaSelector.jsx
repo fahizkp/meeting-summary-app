@@ -4,35 +4,39 @@ const AgendaSelector = ({ agendas, selectedAgendas, onAgendaAdd, onAgendaRemove 
   const [selectedAgenda, setSelectedAgenda] = useState('');
 
   const handleAddAgenda = () => {
-    if (selectedAgenda && !selectedAgendas.includes(selectedAgenda)) {
-      onAgendaAdd(selectedAgenda);
-      setSelectedAgenda('');
+    const agendaValue = selectedAgenda.trim();
+    if (agendaValue && !selectedAgendas.includes(agendaValue)) {
+      onAgendaAdd(agendaValue);
     }
+    setSelectedAgenda('');
   };
 
   return (
     <div className="form-group">
-      <label>എജണ്ട (Agenda):</label>
+      <label>അജണ്ടകൾ:</label>
       <div className="agenda-selector">
-        <select
+        <input
+          type="text"
           value={selectedAgenda}
           onChange={(e) => setSelectedAgenda(e.target.value)}
-          disabled={!agendas || agendas.length === 0}
-        >
-          <option value="">എജണ്ട തിരഞ്ഞെടുക്കുക (Select Agenda)</option>
-          {agendas && agendas.map((agenda, index) => (
-            <option key={index} value={agenda}>
-              {agenda}
-            </option>
-          ))}
-        </select>
+          list="agenda-options"
+          placeholder="അജണ്ട ചേർക്കുക"
+        />
+        {agendas && agendas.length > 0 && (
+          <datalist id="agenda-options">
+            {agendas.map((agenda, index) => (
+              <option key={`${agenda}-${index}`} value={agenda} />
+            ))}
+          </datalist>
+        )}
         <button
           type="button"
           className="btn-secondary"
           onClick={handleAddAgenda}
-          disabled={!selectedAgenda || selectedAgendas.includes(selectedAgenda)}
+          disabled={!selectedAgenda.trim()}
+          aria-label="അജണ്ട ചേർക്കുക"
         >
-          + ചേർക്കുക (Add)
+          +
         </button>
       </div>
       {selectedAgendas.length > 0 && (
@@ -42,10 +46,27 @@ const AgendaSelector = ({ agendas, selectedAgendas, onAgendaAdd, onAgendaRemove 
               <span>{agenda}</span>
               <button
                 type="button"
-                className="btn-danger"
                 onClick={() => onAgendaRemove(index)}
+                aria-label={`${agenda} നീക്കം ചെയ്യുക`}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  padding: '4px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
               >
-                നീക്കം ചെയ്യുക (Remove)
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="#d32f2f"
+                  aria-hidden="true"
+                >
+                  <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1z" />
+                </svg>
               </button>
             </div>
           ))}

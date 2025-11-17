@@ -164,7 +164,16 @@ router.post('/meetings', express.json(), async (req, res) => {
   }
   
   try {
-    const { zoneName, date, minutes, attendance } = req.body;
+    const {
+      zoneName,
+      date,
+      startTime,
+      endTime,
+      agendas,
+      minutes,
+      attendance,
+      qhls,
+    } = req.body;
 
     // Validation
     if (!zoneName || !date || !minutes || !attendance) {
@@ -184,8 +193,12 @@ router.post('/meetings', express.json(), async (req, res) => {
     const result = await googleSheetsService.saveMeetingSummary({
       zoneName,
       date,
+      startTime,
+      endTime,
+      agendas: Array.isArray(agendas) ? agendas : [],
       minutes,
       attendance,
+      qhls: Array.isArray(qhls) ? qhls : [],
     });
 
     res.json({
