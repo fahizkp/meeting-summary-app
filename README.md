@@ -353,3 +353,11 @@ For issues or questions, please check:
 2. Node.js and Express documentation
 3. React documentation
 
+## Render Deploy Checklist
+
+1. Push the branch `render-setup/fahizkp` containing `render.yaml`.
+2. In Render, choose “From Blueprint” (or let Render auto-detect `render.yaml`) to create the backend and frontend services.
+3. After the backend (`meeting-summary-backend`) finishes provisioning, copy its URL (e.g., `https://meeting-summary-backend.onrender.com`) and update the Static Site’s `REACT_APP_API_URL` environment variable (either directly in the dashboard or by editing `render.yaml`), then redeploy the frontend.
+4. Remember that React build-time environment variables such as `REACT_APP_API_URL` require rebuilding/redeploying whenever they change.
+5. Free tier services may sleep; expect cold starts and test CORS/endpoints like `/api/hello` once both services are up.
+
