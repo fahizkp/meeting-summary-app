@@ -388,14 +388,12 @@ class GoogleSheetsService {
 
     attendance.forEach((item) => {
       const name = item.name;
-      const role = item.role ? ` (${item.role})` : '';
-      const fullName = `${name}${role}`;
 
       if (item.status === 'present') {
-        presentAttendees.push(fullName);
+        presentAttendees.push(name);
       } else if (item.status === 'leave') {
         const reason = item.reason ? ` (${item.reason})` : '';
-        leaveAttendees.push(`${fullName}${reason}`);
+        leaveAttendees.push(`${name}${reason}`);
       }
     });
 

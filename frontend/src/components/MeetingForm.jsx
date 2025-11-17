@@ -375,6 +375,7 @@ const MeetingForm = () => {
       `*മീറ്റിംഗ് റിപ്പോർട്ട്*`,
       `━━━━━━━━━━━━━━━━━━━━`,
       `*മണ്ഡലം:* ${meetingData.zoneName}`,
+      ``,
       `*തീയതി:* ${meetingData.date}`,
       meetingData.startTime ? `*തുടങ്ങിയ സമയം:* ${meetingData.startTime}` : '',
       meetingData.endTime ? `*അവസാനിച്ച സമയം:* ${meetingData.endTime}` : '',
@@ -452,6 +453,7 @@ const MeetingForm = () => {
 
     // Meeting Details
     addText(`മണ്ഡലം: ${reportData.meetingData.zoneName}`, 12, true);
+    yPosition += 5; // Add line space before തീയതി
     addText(`തീയതി: ${reportData.meetingData.date}`, 12);
     if (reportData.meetingData.startTime) {
       addText(`തുടങ്ങിയ സമയം: ${reportData.meetingData.startTime}`, 12);
@@ -459,27 +461,27 @@ const MeetingForm = () => {
     if (reportData.meetingData.endTime) {
       addText(`അവസാനിച്ച സമയം: ${reportData.meetingData.endTime}`, 12);
     }
-    yPosition += 5;
+    yPosition += 5; // Add line space before പങ്കെടുത്തവർ
 
     // Attendees
     addText('പങ്കെടുത്തവർ:', 12, true);
     addText(reportData.report.attendees || 'ആരുമില്ല', 11);
-    yPosition += 5;
+    yPosition += 5; // Add line space before ലീവ് ആയവർ
 
     // Leave attendees
     addText('ലീവ് ആയവർ:', 12, true);
     addText(reportData.report.leaveAayavar || 'ആരുമില്ല', 11);
-    yPosition += 5;
+    yPosition += 5; // Add line space before അജണ്ടകൾ
 
     // Agenda
     addText('അജണ്ടകൾ:', 12, true);
     addText(reportData.report.agenda || 'അജണ്ടകളില്ല', 11);
-    yPosition += 5;
+    yPosition += 5; // Add line space before തീരുമാനങ്ങൾ
 
     // Minutes
     addText('തീരുമാനങ്ങൾ:', 12, true);
     addText(reportData.report.minutes || 'തീരുമാനങ്ങളില്ല', 11);
-    yPosition += 5;
+    yPosition += 5; // Add line space before QHLS Status
 
     // QHLS
     addText('QHLS Status:', 12, true);

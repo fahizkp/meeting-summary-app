@@ -36,9 +36,17 @@ const MeetingReport = () => {
   };
 
   const handleCopyReport = () => {
-    if (!report) return;
+    if (!report || !meetingData) return;
 
-    const reportText = `പങ്കെടുത്തവർ:
+    const reportText = `മീറ്റിംഗ് റിപ്പോർട്ട്
+━━━━━━━━━━━━━━━━━━━━
+മണ്ഡലം: ${meetingData.zoneName}
+
+തീയതി: ${meetingData.date}
+${meetingData.startTime ? `തുടങ്ങിയ സമയം: ${meetingData.startTime}` : ''}
+${meetingData.endTime ? `അവസാനിച്ച സമയം: ${meetingData.endTime}` : ''}
+
+പങ്കെടുത്തവർ:
 ${report.attendees || 'ആരുമില്ല'}
 
 ലീവ് ആയവർ:
