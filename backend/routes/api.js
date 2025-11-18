@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { authenticate } = require('../middleware/auth');
 
 let googleSheetsService;
 try {
@@ -8,6 +9,16 @@ try {
   console.error('Failed to initialize Google Sheets service:', error.message);
   // Service will be null, routes will handle this
 }
+
+// Apply authentication middleware to all routes except debug
+router.use((req, res, next) => {
+  // Skip auth for debug endpoint
+  if (req.path === '/debug/env') {
+    return next();
+  }
+  // Apply auth middleware to all other routes
+  authenticate(req, res, next);
+});
 
 /**
  * GET /api/debug/env
@@ -211,6 +222,146 @@ router.post('/meetings', express.json(), async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to save meeting summary',
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * GET /api/meetings/list
+ * Get all meetings
+ */
+router.get('/meetings/list', async (req, res) => {
+  if (!googleSheetsService) {
+    return res.status(500).json({
+      success: false,
+      error: 'Google Sheets service not initialized',
+      message: 'Please check your .env file and ensure all required environment variables are set',
+    });
+  }
+  
+  try {
+    const meetings = await googleSheetsService.getAllMeetings();
+    res.json({ success: true, meetings });
+  } catch (error) {
+    console.error('Error in /api/meetings/list:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch meetings',
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * DELETE /api/meetings/:meetingId
+ * Delete a meeting
+ */
+router.delete('/meetings/:meetingId', async (req, res) => {
+  if (!googleSheetsService) {
+    return res.status(500).json({
+      success: false,
+      error: 'Google Sheets service not initialized',
+      message: 'Please check your .env file and ensure all required environment variables are set',
+    });
+  }
+  
+  try {
+    const { meetingId } = req.params;
+    const result = await googleSheetsService.deleteMeeting(meetingId);
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        error: 'Meeting not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Meeting deleted successfully',
+      data: result,
+    });
+  } catch (error) {
+    console.error('Error in DELETE /api/meetings:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete meeting',
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * PUT /api/meetings/:meetingId
+ * Update a meeting
+ */
+router.put('/meetings/:meetingId', express.json(), async (req, res) => {
+  if (!googleSheetsService) {
+    return res.status(500).json({
+      success: false,
+      error: 'Google Sheets service not initialized',
+      message: 'Please check your .env file and ensure all required environment variables are set',
+    });
+  }
+
+  const { meetingId } = req.params;
+  const {
+    zoneName,
+    date,
+    startTime,
+    endTime,
+    agendas,
+    minutes,
+    attendance,
+    qhls,
+  } = req.body;
+
+  if (!zoneName || !date || !minutes || !attendance) {
+    return res.status(400).json({
+      success: false,
+      error: 'Missing required fields',
+      message: 'Zone name, date, minutes, and attendance are required',
+    });
+  }
+
+  if (!Array.isArray(minutes) || !Array.isArray(attendance)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid data format',
+      message: 'Minutes and attendance must be arrays',
+    });
+  }
+
+  try {
+    const result = await googleSheetsService.updateMeeting(meetingId, {
+      zoneName,
+      date,
+      startTime,
+      endTime,
+      agendas: Array.isArray(agendas) ? agendas : [],
+      minutes,
+      attendance,
+      qhls: Array.isArray(qhls) ? qhls : [],
+    });
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        error: 'Meeting not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Meeting updated successfully',
+      data: result,
+    });
+  } catch (error) {
+    console.error('Error in PUT /api/meetings:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update meeting',
       message: error.message,
     });
   }

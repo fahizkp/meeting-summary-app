@@ -59,18 +59,48 @@ const QHLSTable = ({ qhlsData, onQHLSChange, availableUnits = [] }) => {
                   <input
                     type="number"
                     value={row.male || ''}
-                    onChange={(e) => handleFieldChange(index, 'male', e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      // Allow empty string or valid number between 0 and 1000
+                      if (val === '' || (!isNaN(val) && parseInt(val) >= 0 && parseInt(val) <= 1000)) {
+                        handleFieldChange(index, 'male', val);
+                      }
+                    }}
+                    onBlur={(e) => {
+                      // Ensure value is within range on blur
+                      const val = e.target.value;
+                      if (val !== '' && (isNaN(val) || parseInt(val) < 0 || parseInt(val) > 1000)) {
+                        handleFieldChange(index, 'male', '0');
+                      }
+                    }}
                     placeholder="0"
                     min="0"
+                    max="1000"
+                    step="1"
                   />
                 </td>
                 <td>
                   <input
                     type="number"
                     value={row.female || ''}
-                    onChange={(e) => handleFieldChange(index, 'female', e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      // Allow empty string or valid number between 0 and 1000
+                      if (val === '' || (!isNaN(val) && parseInt(val) >= 0 && parseInt(val) <= 1000)) {
+                        handleFieldChange(index, 'female', val);
+                      }
+                    }}
+                    onBlur={(e) => {
+                      // Ensure value is within range on blur
+                      const val = e.target.value;
+                      if (val !== '' && (isNaN(val) || parseInt(val) < 0 || parseInt(val) > 1000)) {
+                        handleFieldChange(index, 'female', '0');
+                      }
+                    }}
                     placeholder="0"
                     min="0"
+                    max="1000"
+                    step="1"
                   />
                 </td>
               </tr>

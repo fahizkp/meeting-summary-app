@@ -209,6 +209,40 @@ class GoogleSheetsService {
   }
 
   /**
+   * Get user by username from Users sheet
+   */
+  async getUserByUsername(username) {
+    try {
+      if (!this.spreadsheetId) {
+        throw new Error('Spreadsheet ID is not configured');
+      }
+      
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'Users!A2:D', // Column A: Username, B: Password, C: Role, D: CreatedDate
+      });
+
+      const rows = response.data.values || [];
+      
+      for (const row of rows) {
+        if (row[0] && row[0].trim().toLowerCase() === username.trim().toLowerCase()) {
+          return {
+            username: row[0].trim(),
+            password: row[1] || '', // Plain text for now, will be hashed later
+            role: row[2] || 'user',
+            createdDate: row[3] || '',
+          };
+        }
+      }
+
+      return null; // User not found
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Check if a sheet exists in the spreadsheet
    */
   async sheetExists(sheetName) {
@@ -377,6 +411,227 @@ class GoogleSheetsService {
   }
 
   /**
+   * Get all meetings from all week sheets
+   */
+  async getAllMeetings() {
+    try {
+      if (!this.spreadsheetId) {
+        throw new Error('Spreadsheet ID is not configured');
+      }
+
+      // Get all sheets
+      const spreadsheet = await this.sheets.spreadsheets.get({
+        spreadsheetId: this.spreadsheetId,
+      });
+
+      const sheets = spreadsheet.data.sheets || [];
+      const allMeetings = [];
+      
+      // Search through all week sheets
+      for (const sheet of sheets) {
+        const sheetName = sheet.properties.title;
+        // Skip non-week sheets (ZoneData, Agenda, Users, etc.)
+        if (sheetName === 'ZoneData' || sheetName === 'Agenda' || sheetName === 'MeetingSummaries' || sheetName === 'Users') {
+          continue;
+        }
+
+        try {
+          const response = await this.sheets.spreadsheets.values.get({
+            spreadsheetId: this.spreadsheetId,
+            range: `${sheetName}!A2:I`, // Skip header row
+          });
+
+          const rows = response.data.values || [];
+          
+          for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            if (row && row[0] && row[0].startsWith('MEET-')) {
+              // Extract date from meetingId (timestamp)
+              const timestamp = row[0].replace('MEET-', '');
+              const savedDate = new Date(parseInt(timestamp));
+              
+              allMeetings.push({
+                meetingId: row[0],
+                zoneName: row[1] || '',
+                date: row[2] || '',
+                savedDate: savedDate.toISOString().split('T')[0], // YYYY-MM-DD format
+                savedDateTime: savedDate.toISOString(),
+                sheetName: sheetName,
+                rowIndex: i + 2, // +2 because we skip header and arrays are 0-indexed
+              });
+            }
+          }
+        } catch (error) {
+          // Continue searching other sheets
+          continue;
+        }
+      }
+
+      // Sort by saved date (newest first)
+      allMeetings.sort((a, b) => new Date(b.savedDateTime) - new Date(a.savedDateTime));
+
+      return allMeetings;
+    } catch (error) {
+      console.error('Error fetching all meetings:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a meeting by ID
+   */
+  async deleteMeeting(meetingId) {
+    try {
+      if (!this.spreadsheetId) {
+        throw new Error('Spreadsheet ID is not configured');
+      }
+
+      // Get all sheets
+      const spreadsheet = await this.sheets.spreadsheets.get({
+        spreadsheetId: this.spreadsheetId,
+      });
+
+      const sheets = spreadsheet.data.sheets || [];
+      
+      // Search through all week sheets
+      for (const sheet of sheets) {
+        const sheetName = sheet.properties.title;
+        // Skip non-week sheets
+        if (sheetName === 'ZoneData' || sheetName === 'Agenda' || sheetName === 'MeetingSummaries' || sheetName === 'Users') {
+          continue;
+        }
+
+        try {
+          const response = await this.sheets.spreadsheets.values.get({
+            spreadsheetId: this.spreadsheetId,
+            range: `${sheetName}!A2:I`,
+          });
+
+          const rows = response.data.values || [];
+          
+          for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            if (row && row[0] === meetingId) {
+              // Found the meeting, delete the row (row index is i + 2 because we skip header)
+              const rowToDelete = i + 2;
+              
+              await this.sheets.spreadsheets.batchUpdate({
+                spreadsheetId: this.spreadsheetId,
+                resource: {
+                  requests: [{
+                    deleteDimension: {
+                      range: {
+                        sheetId: sheet.properties.sheetId,
+                        dimension: 'ROWS',
+                        startIndex: rowToDelete - 1, // 0-indexed
+                        endIndex: rowToDelete,
+                      },
+                    },
+                  }],
+                },
+              });
+
+              return { success: true, sheetName, rowNumber: rowToDelete };
+            }
+          }
+        } catch (error) {
+          // Continue searching other sheets
+          continue;
+        }
+      }
+
+      return null; // Meeting not found
+    } catch (error) {
+      console.error('Error deleting meeting:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a meeting by ID
+   */
+  async updateMeeting(meetingId, meetingData) {
+    try {
+      if (!this.spreadsheetId) {
+        throw new Error('Spreadsheet ID is not configured');
+      }
+
+      // Get all sheets
+      const spreadsheet = await this.sheets.spreadsheets.get({
+        spreadsheetId: this.spreadsheetId,
+      });
+
+      const sheets = spreadsheet.data.sheets || [];
+      
+      // Search through all week sheets
+      for (const sheet of sheets) {
+        const sheetName = sheet.properties.title;
+        // Skip non-week sheets
+        if (sheetName === 'ZoneData' || sheetName === 'Agenda' || sheetName === 'MeetingSummaries' || sheetName === 'Users') {
+          continue;
+        }
+
+        try {
+          const response = await this.sheets.spreadsheets.values.get({
+            spreadsheetId: this.spreadsheetId,
+            range: `${sheetName}!A2:I`,
+          });
+
+          const rows = response.data.values || [];
+          
+          for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            if (row && row[0] === meetingId) {
+              const rowIndex = i + 2;
+
+              const {
+                zoneName,
+                date,
+                startTime,
+                endTime,
+                agendas = [],
+                minutes = [],
+                attendance = [],
+                qhls = [],
+              } = meetingData;
+
+              const values = [[
+                meetingId,
+                zoneName || row[1] || '',
+                date || row[2] || '',
+                startTime || '',
+                endTime || '',
+                JSON.stringify(agendas),
+                JSON.stringify(minutes),
+                JSON.stringify(attendance),
+                JSON.stringify(qhls),
+              ]];
+
+              await this.sheets.spreadsheets.values.update({
+                spreadsheetId: this.spreadsheetId,
+                range: `${sheetName}!A${rowIndex}:I${rowIndex}`,
+                valueInputOption: 'RAW',
+                resource: {
+                  values,
+                },
+              });
+
+              return { success: true, sheetName, rowNumber: rowIndex };
+            }
+          }
+        } catch (error) {
+          continue;
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error updating meeting:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Generate formatted report from meeting data
    */
   generateReport(meetingData) {
@@ -418,12 +673,22 @@ class GoogleSheetsService {
       qhlsReport = `${headings}\n${qhlsRows.join('\n')}`;
     }
 
+    // Format agendas with serial numbers
+    const formattedAgendas = agendas && agendas.length > 0
+      ? agendas.map((agenda, index) => `${index + 1}. ${agenda}`).join('\n')
+      : 'അജണ്ടകളില്ല';
+
+    // Format minutes with serial numbers
+    const formattedMinutes = minutes && minutes.length > 0
+      ? minutes.map((minute, index) => `${index + 1}. ${minute}`).join('\n')
+      : 'തീരുമാനങ്ങളില്ല';
+
     // Build report
     const report = {
       attendees: presentAttendees.join('\n'),
       leaveAayavar: leaveAttendees.join('\n'),
-      agenda: agendas.join('\n'),
-      minutes: minutes.join('\n'),
+      agenda: formattedAgendas,
+      minutes: formattedMinutes,
       qhlsStatus: qhlsReport,
     };
 

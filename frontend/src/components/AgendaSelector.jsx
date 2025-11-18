@@ -43,7 +43,8 @@ const AgendaSelector = ({ agendas, selectedAgendas, onAgendaAdd, onAgendaRemove 
         <div className="selected-agendas">
           {selectedAgendas.map((agenda, index) => (
             <div key={index} className="agenda-item">
-              <span>{agenda}</span>
+              <span style={{ fontWeight: 600, marginRight: '8px' }}>{index + 1}.</span>
+              <span style={{ flex: 1 }}>{agenda}</span>
               <button
                 type="button"
                 onClick={() => onAgendaRemove(index)}

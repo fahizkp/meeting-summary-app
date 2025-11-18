@@ -1,6 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-const AttendeeList = ({ attendees, attendance, onAttendanceChange, onAbsenceReasonChange }) => {
+const AttendeeList = ({ attendees, attendance, onAttendanceChange, onAbsenceReasonChange, onAddExtraAttendee }) => {
+  const [extraName, setExtraName] = useState('');
+  const [extraRole, setExtraRole] = useState('');
+
+  const handleAddExtra = () => {
+    if (extraName.trim()) {
+      onAddExtraAttendee({ name: extraName.trim(), role: extraRole.trim() });
+      setExtraName('');
+      setExtraRole('');
+    }
+  };
+
   if (!attendees || attendees.length === 0) {
     return (
       <div className="form-group">
@@ -63,6 +74,50 @@ const AttendeeList = ({ attendees, attendance, onAttendanceChange, onAbsenceReas
           </div>
         );
       })}
+      
+      <div style={{ marginTop: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '5px', backgroundColor: '#f9f9f9' }}>
+        <h4 style={{ marginTop: 0, marginBottom: '10px' }}>അധിക പങ്കെടുത്തവർ ചേർക്കുക (Add Extra Attendees):</h4>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div style={{ flex: '1', minWidth: '200px' }}>
+            <label htmlFor="extra-name" style={{ display: 'block', marginBottom: '5px', fontSize: '14px' }}>പേര് (Name):</label>
+            <input
+              type="text"
+              id="extra-name"
+              value={extraName}
+              onChange={(e) => setExtraName(e.target.value)}
+              placeholder="പേര്"
+              style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+            />
+          </div>
+          <div style={{ flex: '1', minWidth: '200px' }}>
+            <label htmlFor="extra-role" style={{ display: 'block', marginBottom: '5px', fontSize: '14px' }}>റോൾ (Role):</label>
+            <input
+              type="text"
+              id="extra-role"
+              value={extraRole}
+              onChange={(e) => setExtraRole(e.target.value)}
+              placeholder="റോൾ"
+              style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={handleAddExtra}
+            disabled={!extraName.trim()}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#28a745',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: extraName.trim() ? 'pointer' : 'not-allowed',
+              opacity: extraName.trim() ? 1 : 0.6
+            }}
+          >
+            + ചേർക്കുക
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

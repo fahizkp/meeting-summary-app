@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getZones, getAttendees, getAgendas, saveMeeting, getMeetingReport } from '../services/api';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { getZones, getAttendees, getAgendas, saveMeeting, getMeetingReport, updateMeeting } from '../services/api';
 import ZoneSelector from './ZoneSelector';
 import AttendeeList from './AttendeeList';
 import MeetingMinutes from './MeetingMinutes';
@@ -22,6 +23,8 @@ const buildQhlsRows = (units = []) => {
 };
 
 const MeetingForm = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [zones, setZones] = useState([]);
   const [selectedZone, setSelectedZone] = useState('');
   const [selectedZoneName, setSelectedZoneName] = useState('');
@@ -43,11 +46,14 @@ const MeetingForm = () => {
   const [reportData, setReportData] = useState(null);
   const [showReportPreview, setShowReportPreview] = useState(false);
   const [draftHydrated, setDraftHydrated] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingMeetingId, setEditingMeetingId] = useState(null);
   const attendanceDraftRef = useRef(null);
   const qhlsDraftRef = useRef(null);
   const savedZoneRef = useRef(null);
   const selectedAgendasHydratedRef = useRef(false);
   const draftDataRef = useRef(null);
+  const editDataRef = useRef(null);
 
   const clearDraftStorage = () => {
     try {
@@ -99,6 +105,36 @@ const MeetingForm = () => {
 
     fetchZones();
     fetchAgendas();
+  }, []);
+
+  // Check if we have edit data passed via navigation state
+  useEffect(() => {
+    if (location.state?.editMeetingData) {
+      try {
+        sessionStorage.setItem('editMeetingData', JSON.stringify(location.state.editMeetingData));
+        editDataRef.current = location.state.editMeetingData;
+      } catch (err) {
+        console.error('Failed to process edit meeting data from navigation state:', err);
+      } finally {
+        // Clear state so it doesn't reapply
+        navigate(location.pathname, { replace: true, state: {} });
+      }
+    }
+  }, [location, navigate]);
+
+  // Check if we have edit data coming from MeetingReport (fallback via sessionStorage)
+  useEffect(() => {
+    const editDataString = sessionStorage.getItem('editMeetingData');
+    if (editDataString) {
+      try {
+        const parsed = JSON.parse(editDataString);
+        editDataRef.current = parsed;
+      } catch (err) {
+        console.error('Failed to parse edit meeting data:', err);
+      } finally {
+        sessionStorage.removeItem('editMeetingData');
+      }
+    }
   }, []);
 
   // Hydrate draft from localStorage on mount
@@ -236,6 +272,76 @@ const MeetingForm = () => {
     }
   }, [selectedZone, zones]);
 
+  // Apply edit data once zones are loaded
+  useEffect(() => {
+    if (!editDataRef.current || zones.length === 0) {
+      return;
+    }
+
+    const editData = editDataRef.current;
+    editDataRef.current = null;
+
+    clearDraftStorage();
+    setIsEditing(true);
+    setEditingMeetingId(editData.meetingId || null);
+
+    const matchedZone = zones.find((zone) => zone.name === editData.zoneName);
+    if (matchedZone) {
+      savedZoneRef.current = matchedZone.id;
+      setSelectedZone(matchedZone.id);
+      setSelectedZoneName(matchedZone.name);
+      setZoneUnits(matchedZone.units || []);
+    } else {
+      savedZoneRef.current = null;
+      setSelectedZone('');
+      setSelectedZoneName(editData.zoneName || '');
+      setZoneUnits([]);
+    }
+
+    setDate(editData.date || getTodayDate());
+    setStartTime(editData.startTime || '');
+    setEndTime(editData.endTime || '');
+
+    if (Array.isArray(editData.agendas)) {
+      setSelectedAgendas(editData.agendas);
+      selectedAgendasHydratedRef.current = true;
+    }
+
+    if (Array.isArray(editData.minutes) && editData.minutes.length) {
+      setMinutes(editData.minutes);
+    } else {
+      setMinutes(['']);
+    }
+
+    if (Array.isArray(editData.attendance) && editData.attendance.length) {
+      const attendanceMap = {};
+      editData.attendance.forEach((item) => {
+        const key = `${item.name}_${item.role || ''}`;
+        attendanceMap[key] = {
+          status: item.status || 'present',
+          reason: item.reason || '',
+        };
+      });
+      attendanceDraftRef.current = attendanceMap;
+      if (!matchedZone) {
+        setAttendance(attendanceMap);
+      }
+    }
+
+    if (Array.isArray(editData.qhls) && editData.qhls.length) {
+      qhlsDraftRef.current = editData.qhls;
+      setQhlsData(editData.qhls);
+    } else if (matchedZone) {
+      qhlsDraftRef.current = buildQhlsRows(matchedZone.units || []);
+      setQhlsData(buildQhlsRows(matchedZone.units || []));
+    } else {
+      qhlsDraftRef.current = null;
+      setQhlsData(buildQhlsRows());
+    }
+
+    setSuccess(`മീറ്റിംഗ് എഡിറ്റ് ചെയ്യുന്നു (Editing meeting): ${editData.meetingId || ''}`);
+  }, [zones]);
+
   useEffect(() => {
     if (
       savedZoneRef.current === selectedZone &&
@@ -277,14 +383,16 @@ const MeetingForm = () => {
     setMinutes(newMinutes);
   };
 
-  const handleAddMinute = () => {
-    setMinutes([...minutes, '']);
+  const handleAddMinute = (initialValue = '') => {
+    setMinutes([...minutes, initialValue]);
   };
 
   const handleRemoveMinute = (index) => {
     if (minutes.length > 1) {
       const newMinutes = minutes.filter((_, i) => i !== index);
       setMinutes(newMinutes);
+    } else {
+      setMinutes(['']);
     }
   };
 
@@ -308,6 +416,21 @@ const MeetingForm = () => {
     });
   };
 
+  const handleAddExtraAttendee = (newAttendee) => {
+    // Add to attendees list
+    setAttendees([...attendees, newAttendee]);
+    
+    // Initialize attendance for the new attendee
+    const attendeeKey = `${newAttendee.name}_${newAttendee.role || ''}`;
+    setAttendance({
+      ...attendance,
+      [attendeeKey]: {
+        status: 'present',
+        reason: '',
+      },
+    });
+  };
+
   const handleAgendaAdd = (agenda) => {
     const trimmedAgenda = (agenda || '').trim();
     if (!trimmedAgenda || selectedAgendas.includes(trimmedAgenda)) {
@@ -321,6 +444,9 @@ const MeetingForm = () => {
   };
 
   const handleQHLSChange = (data) => {
+    setQhlsData(data);
+  };
+
   // Persist form draft whenever relevant state changes
   useEffect(() => {
     if (!draftHydrated) return;
@@ -366,9 +492,6 @@ const MeetingForm = () => {
     attendance,
     qhlsData,
   ]);
-
-    setQhlsData(data);
-  };
 
   const formatReportForWhatsApp = (report, meetingData) => {
     const lines = [
@@ -543,13 +666,23 @@ const MeetingForm = () => {
         qhls: qhlsData.filter(row => row.unit || row.day || row.faculty || row.male || row.female),
       };
 
-      const response = await saveMeeting(meetingData);
+      const isEditMode = isEditing && editingMeetingId;
+      const response = isEditMode
+        ? await updateMeeting(editingMeetingId, meetingData)
+        : await saveMeeting(meetingData);
 
       if (response.success) {
-        const meetingId = response.data?.meetingId || 'N/A';
-        const weekSheet = response.data?.weekSheet || 'N/A';
+        const meetingId = isEditMode
+          ? editingMeetingId
+          : response.data?.meetingId || 'N/A';
         setSavedMeetingId(meetingId);
-            setSuccess('മീറ്റിംഗ് സംഗ്രഹം വിജയകരമായി സേവ് ചെയ്തു! (Meeting summary saved successfully!)');
+        setSuccess(
+          isEditMode
+            ? 'മീറ്റിംഗ് വിജയകരമായി അപ്ഡേറ്റ് ചെയ്തു! (Meeting updated successfully!)'
+            : 'മീറ്റിംഗ് സംഗ്രഹം വിജയകരമായി സേവ് ചെയ്തു! (Meeting summary saved successfully!)'
+        );
+        setIsEditing(false);
+        setEditingMeetingId(null);
         
         // Fetch and display report
         try {
@@ -645,6 +778,7 @@ const MeetingForm = () => {
           attendance={attendance}
           onAttendanceChange={handleAttendanceChange}
           onAbsenceReasonChange={handleAbsenceReasonChange}
+          onAddExtraAttendee={handleAddExtraAttendee}
         />
 
         <MeetingMinutes
@@ -666,9 +800,9 @@ const MeetingForm = () => {
             className="submit-button btn-success"
             disabled={submitting || !selectedZone}
           >
-            {submitting
-              ? 'സേവ് ചെയ്യുന്നു...'
-              : 'സേവ് ചെയ്യുക'}
+          {submitting
+            ? (isEditing ? 'Updating...' : 'സേവ് ചെയ്യുന്നു...')
+            : (isEditing ? 'Update' : 'സേവ് ചെയ്യുക')}
           </button>
         </div>
       </form>

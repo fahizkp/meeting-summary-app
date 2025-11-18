@@ -353,11 +353,50 @@ For issues or questions, please check:
 2. Node.js and Express documentation
 3. React documentation
 
+## Authentication Setup
+
+The application requires users to log in with username and password to access meeting forms and reports.
+
+### Setting Up Users in Google Sheets
+
+1. **Create a "Users" sheet** in your Google Sheets spreadsheet
+2. **Add headers in row 1:**
+   - Column A: Username
+   - Column B: Password
+   - Column C: Role (optional, e.g., "admin", "user")
+   - Column D: CreatedDate (optional)
+
+3. **Add user data starting from row 2:**
+   ```
+   Username | Password | Role | CreatedDate
+   admin    | admin123 | admin | 2024-01-01
+   user1    | pass123  | user  | 2024-01-01
+   ```
+
+4. **Important Notes:**
+   - Passwords are currently stored as plain text (encryption will be added later)
+   - Usernames are case-insensitive
+   - Each username must be unique
+   - Make sure the service account has access to read the Users sheet
+
+### Environment Variables
+
+Add to your backend `.env` file:
+```env
+JWT_SECRET=your-secret-key-here-change-in-production
+JWT_EXPIRY=24h
+```
+
+**Security Note:** 
+- Change `JWT_SECRET` to a strong random string in production
+- Passwords are currently stored in plain text - encryption will be implemented in a future update
+
 ## Render Deploy Checklist
 
 1. Push the branch `render-setup/fahizkp` containing `render.yaml`.
-2. In Render, choose “From Blueprint” (or let Render auto-detect `render.yaml`) to create the backend and frontend services.
-3. After the backend (`meeting-summary-backend`) finishes provisioning, copy its URL (e.g., `https://meeting-summary-backend.onrender.com`) and update the Static Site’s `REACT_APP_API_URL` environment variable (either directly in the dashboard or by editing `render.yaml`), then redeploy the frontend.
+2. In Render, choose "From Blueprint" (or let Render auto-detect `render.yaml`) to create the backend and frontend services.
+3. After the backend (`meeting-summary-backend`) finishes provisioning, copy its URL (e.g., `https://meeting-summary-backend.onrender.com`) and update the Static Site's `REACT_APP_API_URL` environment variable (either directly in the dashboard or by editing `render.yaml`), then redeploy the frontend.
 4. Remember that React build-time environment variables such as `REACT_APP_API_URL` require rebuilding/redeploying whenever they change.
 5. Free tier services may sleep; expect cold starts and test CORS/endpoints like `/api/hello` once both services are up.
+6. **Add JWT_SECRET environment variable** to your backend service in Render dashboard.
 
