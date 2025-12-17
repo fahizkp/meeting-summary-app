@@ -7,6 +7,7 @@ import MeetingMinutes from './MeetingMinutes';
 import AgendaSelector from './AgendaSelector';
 import QHLSTable from './QHLSTable';
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const FORM_STORAGE_KEY = 'meetingFormDraft';
 const getTodayDate = () => new Date().toISOString().split('T')[0];
@@ -534,85 +535,237 @@ const MeetingForm = () => {
     });
   };
 
-  const handleSaveAsPDF = () => {
+  const handleSaveAsPDF = async () => {
     if (!reportData) return;
 
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    let yPosition = 20;
-    const margin = 20;
-    const lineHeight = 7;
-    const maxWidth = pageWidth - (margin * 2);
+    // Malayalam day names
+    const malayalamDays = ['ഞായർ', 'തിങ്കൾ', 'ചൊവ്വ', 'ബുധൻ', 'വ്യാഴം', 'വെള്ളി', 'ശനി'];
 
-    // Helper function to add text with word wrap
-    const addText = (text, fontSize = 12, isBold = false, color = [0, 0, 0]) => {
-      doc.setFontSize(fontSize);
-      doc.setTextColor(color[0], color[1], color[2]);
-      if (isBold) {
-        doc.setFont(undefined, 'bold');
-      } else {
-        doc.setFont(undefined, 'normal');
-      }
-
-      const lines = doc.splitTextToSize(text, maxWidth);
-      
-      if (yPosition + (lines.length * lineHeight) > pageHeight - margin) {
-        doc.addPage();
-        yPosition = 20;
-      }
-
-      lines.forEach((line) => {
-        doc.text(line, margin, yPosition);
-        yPosition += lineHeight;
-      });
-      
-      yPosition += 3; // Add spacing after text block
+    // Format date as DD/MM/YYYY DayName
+    const formatDateWithDay = (dateString) => {
+      const date = new Date(dateString);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const dayName = malayalamDays[date.getDay()];
+      return `${day}/${month}/${year} ${dayName}`;
     };
 
-    // Title
-    addText('മീറ്റിംഗ് റിപ്പോർട്ട്', 16, true, [0, 0, 0]);
-    yPosition += 5;
+    // Format time to 12-hour format
+    const formatTime12Hour = (timeString) => {
+      if (!timeString) return '';
+      const [hours, minutes] = timeString.split(':');
+      const hour = parseInt(hours, 10);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const hour12 = hour % 12 || 12;
+      return `${hour12}:${minutes} ${ampm}`;
+    };
 
-    // Meeting Details
-    addText(`മണ്ഡലം: ${reportData.meetingData.zoneName}`, 12, true);
-    yPosition += 5; // Add line space before തീയതി
-    addText(`തീയതി: ${reportData.meetingData.date}`, 12);
-    if (reportData.meetingData.startTime) {
-      addText(`തുടങ്ങിയ സമയം: ${reportData.meetingData.startTime}`, 12);
+    // Create a temporary container for PDF content with Malayalam font support
+    const pdfContainer = document.createElement('div');
+    pdfContainer.style.cssText = `
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      width: 800px;
+      padding: 20px 30px;
+      background: white;
+      font-family: 'Noto Sans Malayalam', 'Malayalam Sangam MN', 'Manjari', Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #000;
+    `;
+
+    // Format attendees with serial numbers
+    const formatWithSerialNumbers = (text) => {
+      if (!text || text === 'ആരുമില്ല') return 'ആരുമില്ല';
+      const lines = text.split('\n').filter(line => line.trim());
+      return lines.map((line, index) => `${index + 1}. ${line}`).join('\n');
+    };
+
+    // Format QHLS as table
+    const formatQhlsTable = (qhlsStatus) => {
+      if (!qhlsStatus || qhlsStatus === 'QHLS ഡാറ്റയില്ല') {
+        return '<p style="margin: 0; font-size: 13px;">QHLS ഡാറ്റയില്ല</p>';
+      }
+      
+      const lines = qhlsStatus.split('\n').filter(line => line.trim());
+      if (lines.length === 0) {
+        return '<p style="margin: 0; font-size: 13px;">QHLS ഡാറ്റയില്ല</p>';
+      }
+
+      let tableHtml = `
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+          <thead>
+            <tr style="background-color: #f5f5f5;">
+              <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">യൂണിറ്റ്</th>
+              <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">ദിവസം</th>
+              <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">ഫാക്കൽറ്റി</th>
+              <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">പുരുഷൻ</th>
+              <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">സ്ത്രീ</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      // Skip the header line (first line) and process data rows
+      const dataLines = lines.slice(1);
+      dataLines.forEach(line => {
+        const cells = line.split(',').map(cell => cell.trim());
+        if (cells.length >= 5) {
+          tableHtml += `
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 8px;">${cells[0]}</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">${cells[1]}</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">${cells[2]}</td>
+              <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${cells[3]}</td>
+              <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${cells[4]}</td>
+            </tr>
+          `;
+        }
+      });
+      
+      tableHtml += '</tbody></table>';
+      return tableHtml;
+    };
+
+    const attendeesFormatted = formatWithSerialNumbers(reportData.report.attendees);
+    const leaveFormatted = formatWithSerialNumbers(reportData.report.leaveAayavar);
+    const formattedDate = formatDateWithDay(reportData.meetingData.date);
+    const formattedStartTime = formatTime12Hour(reportData.meetingData.startTime);
+    const formattedEndTime = formatTime12Hour(reportData.meetingData.endTime);
+
+    // Build the HTML content with watermark
+    pdfContainer.innerHTML = `
+      <div style="position: relative;">
+        <!-- Watermark -->
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08; z-index: 0; pointer-events: none;">
+          <img src="/wisdom-youth-logo.png" alt="" style="width: 500px; height: auto;" crossorigin="anonymous" />
+        </div>
+        
+        <!-- Content -->
+        <div style="position: relative; z-index: 1;">
+          <div style="text-align: center; margin-bottom: 10px;">
+            <h1 style="font-size: 22px; margin: 0; font-weight: bold;">മീറ്റിംഗ് റിപ്പോർട്ട്</h1>
+          </div>
+          
+          <div style="text-align: center; margin-bottom: 10px;">
+            <h2 style="font-size: 18px; margin: 0; color: #2c3e50; font-weight: bold;">${reportData.meetingData.zoneName}</h2>
+          </div>
+          
+          <div style="border-bottom: 2px solid #333; margin-bottom: 12px; padding-bottom: 10px;">
+            <p style="margin: 3px 0;"><strong>തീയതി:</strong> ${formattedDate}</p>
+            ${formattedStartTime ? `<p style="margin: 3px 0;"><strong>തുടങ്ങിയ സമയം:</strong> ${formattedStartTime}</p>` : ''}
+            ${formattedEndTime ? `<p style="margin: 3px 0;"><strong>അവസാനിച്ച സമയം:</strong> ${formattedEndTime}</p>` : ''}
+          </div>
+          
+          <div style="margin-bottom: 12px;">
+            <h3 style="font-size: 15px; margin: 0 0 6px 0; color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 4px;">പങ്കെടുത്തവർ</h3>
+            <pre style="white-space: pre-wrap; font-family: inherit; margin: 0; font-size: 12px;">${attendeesFormatted}</pre>
+          </div>
+          
+          <div style="margin-bottom: 12px;">
+            <h3 style="font-size: 15px; margin: 0 0 6px 0; color: #c0392b; border-bottom: 1px solid #ddd; padding-bottom: 4px;">ലീവ് ആയവർ</h3>
+            <pre style="white-space: pre-wrap; font-family: inherit; margin: 0; font-size: 12px;">${leaveFormatted}</pre>
+          </div>
+          
+          <div style="margin-bottom: 12px;">
+            <h3 style="font-size: 15px; margin: 0 0 6px 0; color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 4px;">അജണ്ടകൾ</h3>
+            <pre style="white-space: pre-wrap; font-family: inherit; margin: 0; font-size: 12px;">${reportData.report.agenda || 'അജണ്ടകളില്ല'}</pre>
+          </div>
+          
+          <div style="margin-bottom: 12px;">
+            <h3 style="font-size: 15px; margin: 0 0 6px 0; color: #27ae60; border-bottom: 1px solid #ddd; padding-bottom: 4px;">തീരുമാനങ്ങൾ</h3>
+            <pre style="white-space: pre-wrap; font-family: inherit; margin: 0; font-size: 12px;">${reportData.report.minutes || 'തീരുമാനങ്ങളില്ല'}</pre>
+          <div style="margin-bottom: 12px;">
+            <h3 style="font-size: 15px; margin: 0 0 6px 0; color: #8e44ad; border-bottom: 1px solid #ddd; padding-bottom: 4px;">QHLS</h3>
+            ${formatQhlsTable(reportData.report.qhlsStatus)}
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(pdfContainer);
+
+    try {
+      // Use html2canvas to capture the content with proper font rendering
+      const canvas = await html2canvas(pdfContainer, {
+        scale: 2, // Higher quality
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      
+      // Calculate dimensions to fit the page
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 10;
+      
+      // Handle multi-page if content is too long
+      const scaledHeight = imgHeight * ratio;
+      
+      if (scaledHeight <= pdfHeight - 20) {
+        // Fits on one page
+        pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, scaledHeight);
+      } else {
+        // Multi-page handling
+        let remainingHeight = imgHeight;
+        let position = 0;
+        const pageHeightInPx = (pdfHeight - 20) / ratio;
+        
+        while (remainingHeight > 0) {
+          // Create a temporary canvas for this page section
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width = imgWidth;
+          pageCanvas.height = Math.min(pageHeightInPx, remainingHeight);
+          
+          const ctx = pageCanvas.getContext('2d');
+          ctx.drawImage(
+            canvas,
+            0, position,
+            imgWidth, pageCanvas.height,
+            0, 0,
+            imgWidth, pageCanvas.height
+          );
+          
+          const pageImgData = pageCanvas.toDataURL('image/png');
+          
+          if (position > 0) {
+            pdf.addPage();
+          }
+          
+          pdf.addImage(
+            pageImgData, 
+            'PNG', 
+            imgX, 
+            imgY, 
+            imgWidth * ratio, 
+            pageCanvas.height * ratio
+          );
+          
+          remainingHeight -= pageHeightInPx;
+          position += pageHeightInPx;
+        }
+      }
+
+      // Save PDF
+      const fileName = `Meeting_Report_${reportData.meetingData.zoneName}_${reportData.meetingData.date}.pdf`;
+      pdf.save(fileName);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('PDF ജനറേറ്റ് ചെയ്യുന്നതിൽ പിശക് (Error generating PDF)');
+    } finally {
+      // Clean up
+      document.body.removeChild(pdfContainer);
     }
-    if (reportData.meetingData.endTime) {
-      addText(`അവസാനിച്ച സമയം: ${reportData.meetingData.endTime}`, 12);
-    }
-    yPosition += 5; // Add line space before പങ്കെടുത്തവർ
-
-    // Attendees
-    addText('പങ്കെടുത്തവർ:', 12, true);
-    addText(reportData.report.attendees || 'ആരുമില്ല', 11);
-    yPosition += 5; // Add line space before ലീവ് ആയവർ
-
-    // Leave attendees
-    addText('ലീവ് ആയവർ:', 12, true);
-    addText(reportData.report.leaveAayavar || 'ആരുമില്ല', 11);
-    yPosition += 5; // Add line space before അജണ്ടകൾ
-
-    // Agenda
-    addText('അജണ്ടകൾ:', 12, true);
-    addText(reportData.report.agenda || 'അജണ്ടകളില്ല', 11);
-    yPosition += 5; // Add line space before തീരുമാനങ്ങൾ
-
-    // Minutes
-    addText('തീരുമാനങ്ങൾ:', 12, true);
-    addText(reportData.report.minutes || 'തീരുമാനങ്ങളില്ല', 11);
-    yPosition += 5; // Add line space before QHLS Status
-
-    // QHLS
-    addText('QHLS Status:', 12, true);
-    addText(reportData.report.qhlsStatus || 'QHLS ഡാറ്റയില്ല', 11);
-
-    // Save PDF
-    const fileName = `Meeting_Report_${reportData.meetingData.zoneName}_${reportData.meetingData.date}.pdf`;
-    doc.save(fileName);
   };
 
   const handleClosePreview = () => {

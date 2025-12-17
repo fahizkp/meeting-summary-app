@@ -39,11 +39,19 @@ class GoogleSheetsService {
   constructor() {
     this.auth = null;
     this.sheets = null;
-    this.spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
+    
+    // Source spreadsheet for reading master data (zones, attendees, agendas, users)
+    this.sourceSpreadsheetId = process.env.GOOGLE_SHEETS_SOURCE_SPREADSHEET_ID || process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
+    
+    // Target spreadsheet for writing meeting summaries
+    this.targetSpreadsheetId = process.env.GOOGLE_SHEETS_TARGET_SPREADSHEET_ID || process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
     
     // Validate required environment variables
-    if (!this.spreadsheetId) {
-      throw new Error('GOOGLE_SHEETS_SPREADSHEET_ID is not set in environment variables');
+    if (!this.sourceSpreadsheetId) {
+      throw new Error('GOOGLE_SHEETS_SOURCE_SPREADSHEET_ID (or GOOGLE_SHEETS_SPREADSHEET_ID) is not set in environment variables');
+    }
+    if (!this.targetSpreadsheetId) {
+      throw new Error('GOOGLE_SHEETS_TARGET_SPREADSHEET_ID (or GOOGLE_SHEETS_SPREADSHEET_ID) is not set in environment variables');
     }
     if (!process.env.GOOGLE_SHEETS_CLIENT_EMAIL) {
       throw new Error('GOOGLE_SHEETS_CLIENT_EMAIL is not set in environment variables');
@@ -99,16 +107,16 @@ class GoogleSheetsService {
   }
 
   /**
-   * Get all unique zones from ZoneData sheet
+   * Get all unique zones from ZoneData sheet (from SOURCE spreadsheet)
    */
   async getZones() {
     try {
-      if (!this.spreadsheetId) {
-        throw new Error('Spreadsheet ID is not configured');
+      if (!this.sourceSpreadsheetId) {
+        throw new Error('Source Spreadsheet ID is not configured');
       }
       
       const response = await this.sheets.spreadsheets.values.get({
-        spreadsheetId: this.spreadsheetId,
+        spreadsheetId: this.sourceSpreadsheetId,
         range: 'ZoneData!A2:E', // Column A: ZoneId, B: ZoneName, E: Unit
       });
 
@@ -150,16 +158,16 @@ class GoogleSheetsService {
   }
 
   /**
-   * Get attendees for a specific zone
+   * Get attendees for a specific zone (from SOURCE spreadsheet)
    */
   async getAttendeesByZone(zoneId) {
     try {
-      if (!this.spreadsheetId) {
-        throw new Error('Spreadsheet ID is not configured');
+      if (!this.sourceSpreadsheetId) {
+        throw new Error('Source Spreadsheet ID is not configured');
       }
       
       const response = await this.sheets.spreadsheets.values.get({
-        spreadsheetId: this.spreadsheetId,
+        spreadsheetId: this.sourceSpreadsheetId,
         range: 'ZoneData!A2:D', // ZoneId, ZoneName, AttendeeName, Role
       });
 
@@ -183,16 +191,16 @@ class GoogleSheetsService {
   }
 
   /**
-   * Get agenda items from Agenda sheet
+   * Get agenda items from Agenda sheet (from SOURCE spreadsheet)
    */
   async getAgendas() {
     try {
-      if (!this.spreadsheetId) {
-        throw new Error('Spreadsheet ID is not configured');
+      if (!this.sourceSpreadsheetId) {
+        throw new Error('Source Spreadsheet ID is not configured');
       }
       
       const response = await this.sheets.spreadsheets.values.get({
-        spreadsheetId: this.spreadsheetId,
+        spreadsheetId: this.sourceSpreadsheetId,
         range: 'Agenda!A2:A', // Column A only, starting from row 2
       });
 
@@ -209,16 +217,16 @@ class GoogleSheetsService {
   }
 
   /**
-   * Get user by username from Users sheet
+   * Get user by username from Users sheet (from SOURCE spreadsheet)
    */
   async getUserByUsername(username) {
     try {
-      if (!this.spreadsheetId) {
-        throw new Error('Spreadsheet ID is not configured');
+      if (!this.sourceSpreadsheetId) {
+        throw new Error('Source Spreadsheet ID is not configured');
       }
       
       const response = await this.sheets.spreadsheets.values.get({
-        spreadsheetId: this.spreadsheetId,
+        spreadsheetId: this.sourceSpreadsheetId,
         range: 'Users!A2:D', // Column A: Username, B: Password, C: Role, D: CreatedDate
       });
 
@@ -243,12 +251,12 @@ class GoogleSheetsService {
   }
 
   /**
-   * Check if a sheet exists in the spreadsheet
+   * Check if a sheet exists in the TARGET spreadsheet
    */
   async sheetExists(sheetName) {
     try {
       const response = await this.sheets.spreadsheets.get({
-        spreadsheetId: this.spreadsheetId,
+        spreadsheetId: this.targetSpreadsheetId,
       });
       
       const sheets = response.data.sheets || [];
@@ -260,13 +268,13 @@ class GoogleSheetsService {
   }
 
   /**
-   * Create a new sheet with headers
+   * Create a new sheet with headers (in TARGET spreadsheet)
    */
   async createWeekSheet(sheetName) {
     try {
       // Create the sheet
       const createResponse = await this.sheets.spreadsheets.batchUpdate({
-        spreadsheetId: this.spreadsheetId,
+        spreadsheetId: this.targetSpreadsheetId,
         resource: {
           requests: [{
             addSheet: {
@@ -282,19 +290,21 @@ class GoogleSheetsService {
 
       // Add headers to row 1
       await this.sheets.spreadsheets.values.update({
-        spreadsheetId: this.spreadsheetId,
-        range: `${sheetName}!A1:I1`,
+        spreadsheetId: this.targetSpreadsheetId,
+        range: `${sheetName}!A1:K1`,
         valueInputOption: 'RAW',
         resource: {
           values: [[
             'MeetingId',
-            'ZoneName',
+            'Zone',
             'Date',
             'StartTime',
             'EndTime',
             'Agendas',
+            'Attendees',
+            'Leave',
+            'AdditionalAttendees',
             'Minutes',
-            'Attendance',
             'QHLS',
           ]],
         },
@@ -302,7 +312,7 @@ class GoogleSheetsService {
 
       // Format header row (bold)
       await this.sheets.spreadsheets.batchUpdate({
-        spreadsheetId: this.spreadsheetId,
+        spreadsheetId: this.targetSpreadsheetId,
         resource: {
           requests: [{
             repeatCell: {
@@ -311,7 +321,7 @@ class GoogleSheetsService {
                 startRowIndex: 0,
                 endRowIndex: 1,
                 startColumnIndex: 0,
-                endColumnIndex: 9,
+                endColumnIndex: 11,
               },
               cell: {
                 userEnteredFormat: {
@@ -350,17 +360,66 @@ class GoogleSheetsService {
   }
 
   /**
-   * Get meeting data by meeting ID
+   * Parse comma-separated attendees string back to attendance array
+   * @param {string} attendeesText - Comma-separated names of present attendees
+   * @param {string} leaveText - Comma-separated names with reasons: "Name (reason), Name2"
+   * @returns {Array} - Array of attendance objects
+   */
+  parseAttendanceFromColumns(attendeesText, leaveText) {
+    const attendance = [];
+
+    // Parse present attendees
+    if (attendeesText && attendeesText.trim()) {
+      const presentNames = attendeesText.split(',').map(name => name.trim()).filter(Boolean);
+      presentNames.forEach(name => {
+        attendance.push({
+          name,
+          role: '',
+          status: 'present',
+          reason: '',
+        });
+      });
+    }
+
+    // Parse leave attendees with reasons
+    if (leaveText && leaveText.trim()) {
+      // Match "Name (reason)" or just "Name"
+      const leaveEntries = leaveText.split(',').map(entry => entry.trim()).filter(Boolean);
+      leaveEntries.forEach(entry => {
+        const match = entry.match(/^(.+?)\s*\((.+)\)$/);
+        if (match) {
+          attendance.push({
+            name: match[1].trim(),
+            role: '',
+            status: 'leave',
+            reason: match[2].trim(),
+          });
+        } else {
+          attendance.push({
+            name: entry.trim(),
+            role: '',
+            status: 'leave',
+            reason: '',
+          });
+        }
+      });
+    }
+
+    return attendance;
+  }
+
+  /**
+   * Get meeting data by meeting ID (from TARGET spreadsheet)
    */
   async getMeetingById(meetingId) {
     try {
-      if (!this.spreadsheetId) {
-        throw new Error('Spreadsheet ID is not configured');
+      if (!this.targetSpreadsheetId) {
+        throw new Error('Target Spreadsheet ID is not configured');
       }
 
-      // Get all sheets
+      // Get all sheets from TARGET spreadsheet
       const spreadsheet = await this.sheets.spreadsheets.get({
-        spreadsheetId: this.spreadsheetId,
+        spreadsheetId: this.targetSpreadsheetId,
       });
 
       const sheets = spreadsheet.data.sheets || [];
@@ -369,31 +428,55 @@ class GoogleSheetsService {
       for (const sheet of sheets) {
         const sheetName = sheet.properties.title;
         // Skip non-week sheets (ZoneData, Agenda, etc.)
-        if (sheetName === 'ZoneData' || sheetName === 'Agenda' || sheetName === 'MeetingSummaries') {
+        if (sheetName === 'ZoneData' || sheetName === 'Agenda' || sheetName === 'MeetingSummaries' || sheetName === 'Users') {
           continue;
         }
 
         try {
           const response = await this.sheets.spreadsheets.values.get({
-            spreadsheetId: this.spreadsheetId,
-            range: `${sheetName}!A2:I`, // Skip header row
+            spreadsheetId: this.targetSpreadsheetId,
+            range: `${sheetName}!A2:K`, // Skip header row
           });
 
           const rows = response.data.values || [];
           
           for (const row of rows) {
             if (row[0] === meetingId) {
-              // Found the meeting
+              // New column structure:
+              // A=MeetingId, B=Zone, C=Date, D=StartTime, E=EndTime, 
+              // F=Agendas, G=Attendees, H=Leave, I=AdditionalAttendees, J=Minutes, K=QHLS
+              
+              // Parse agendas from comma-separated text
+              const agendasText = row[5] || '';
+              const agendas = agendasText ? agendasText.split(',').map(a => a.trim()).filter(Boolean) : [];
+
+              // Parse attendance from Attendees (G) and Leave (H) columns
+              const attendeesText = row[6] || '';
+              const leaveText = row[7] || '';
+              const attendance = this.parseAttendanceFromColumns(attendeesText, leaveText);
+
+              // Parse minutes from comma-separated text
+              const minutesText = row[9] || '';
+              const minutes = minutesText ? minutesText.split(',').map(m => m.trim()).filter(Boolean) : [];
+
+              // QHLS is still JSON
+              let qhls = [];
+              try {
+                qhls = row[10] ? JSON.parse(row[10]) : [];
+              } catch (e) {
+                qhls = [];
+              }
+
               return {
                 meetingId: row[0],
                 zoneName: row[1],
                 date: row[2],
                 startTime: row[3] || '',
                 endTime: row[4] || '',
-                agendas: row[5] ? JSON.parse(row[5]) : [],
-                minutes: row[6] ? JSON.parse(row[6]) : [],
-                attendance: row[7] ? JSON.parse(row[7]) : [],
-                qhls: row[8] ? JSON.parse(row[8]) : [],
+                agendas,
+                minutes,
+                attendance,
+                qhls,
               };
             }
           }
@@ -411,17 +494,17 @@ class GoogleSheetsService {
   }
 
   /**
-   * Get all meetings from all week sheets
+   * Get all meetings from all week sheets (from TARGET spreadsheet)
    */
   async getAllMeetings() {
     try {
-      if (!this.spreadsheetId) {
-        throw new Error('Spreadsheet ID is not configured');
+      if (!this.targetSpreadsheetId) {
+        throw new Error('Target Spreadsheet ID is not configured');
       }
 
-      // Get all sheets
+      // Get all sheets from TARGET spreadsheet
       const spreadsheet = await this.sheets.spreadsheets.get({
-        spreadsheetId: this.spreadsheetId,
+        spreadsheetId: this.targetSpreadsheetId,
       });
 
       const sheets = spreadsheet.data.sheets || [];
@@ -437,8 +520,8 @@ class GoogleSheetsService {
 
         try {
           const response = await this.sheets.spreadsheets.values.get({
-            spreadsheetId: this.spreadsheetId,
-            range: `${sheetName}!A2:I`, // Skip header row
+            spreadsheetId: this.targetSpreadsheetId,
+            range: `${sheetName}!A2:K`, // Skip header row
           });
 
           const rows = response.data.values || [];
@@ -478,17 +561,17 @@ class GoogleSheetsService {
   }
 
   /**
-   * Delete a meeting by ID
+   * Delete a meeting by ID (from TARGET spreadsheet)
    */
   async deleteMeeting(meetingId) {
     try {
-      if (!this.spreadsheetId) {
-        throw new Error('Spreadsheet ID is not configured');
+      if (!this.targetSpreadsheetId) {
+        throw new Error('Target Spreadsheet ID is not configured');
       }
 
-      // Get all sheets
+      // Get all sheets from TARGET spreadsheet
       const spreadsheet = await this.sheets.spreadsheets.get({
-        spreadsheetId: this.spreadsheetId,
+        spreadsheetId: this.targetSpreadsheetId,
       });
 
       const sheets = spreadsheet.data.sheets || [];
@@ -503,8 +586,8 @@ class GoogleSheetsService {
 
         try {
           const response = await this.sheets.spreadsheets.values.get({
-            spreadsheetId: this.spreadsheetId,
-            range: `${sheetName}!A2:I`,
+            spreadsheetId: this.targetSpreadsheetId,
+            range: `${sheetName}!A2:K`,
           });
 
           const rows = response.data.values || [];
@@ -516,7 +599,7 @@ class GoogleSheetsService {
               const rowToDelete = i + 2;
               
               await this.sheets.spreadsheets.batchUpdate({
-                spreadsheetId: this.spreadsheetId,
+                spreadsheetId: this.targetSpreadsheetId,
                 resource: {
                   requests: [{
                     deleteDimension: {
@@ -548,17 +631,17 @@ class GoogleSheetsService {
   }
 
   /**
-   * Update a meeting by ID
+   * Update a meeting by ID (in TARGET spreadsheet)
    */
   async updateMeeting(meetingId, meetingData) {
     try {
-      if (!this.spreadsheetId) {
-        throw new Error('Spreadsheet ID is not configured');
+      if (!this.targetSpreadsheetId) {
+        throw new Error('Target Spreadsheet ID is not configured');
       }
 
-      // Get all sheets
+      // Get all sheets from TARGET spreadsheet
       const spreadsheet = await this.sheets.spreadsheets.get({
-        spreadsheetId: this.spreadsheetId,
+        spreadsheetId: this.targetSpreadsheetId,
       });
 
       const sheets = spreadsheet.data.sheets || [];
@@ -573,8 +656,8 @@ class GoogleSheetsService {
 
         try {
           const response = await this.sheets.spreadsheets.values.get({
-            spreadsheetId: this.spreadsheetId,
-            range: `${sheetName}!A2:I`,
+            spreadsheetId: this.targetSpreadsheetId,
+            range: `${sheetName}!A2:K`,
           });
 
           const rows = response.data.values || [];
@@ -595,21 +678,54 @@ class GoogleSheetsService {
                 qhls = [],
               } = meetingData;
 
+              // Format agendas as comma-separated text
+              const agendasText = Array.isArray(agendas) ? agendas.join(', ') : '';
+
+              // Format minutes as comma-separated text
+              const minutesText = Array.isArray(minutes) ? minutes.join(', ') : '';
+
+              // Split attendance into present attendees and leave attendees
+              const presentAttendees = [];
+              const leaveAttendees = [];
+
+              if (Array.isArray(attendance)) {
+                attendance.forEach((item) => {
+                  if (item.status === 'present') {
+                    presentAttendees.push(item.name);
+                  } else if (item.status === 'leave') {
+                    const reason = item.reason ? ` (${item.reason})` : '';
+                    leaveAttendees.push(`${item.name}${reason}`);
+                  }
+                });
+              }
+
+              // Comma-separated strings for attendees and leave
+              const attendeesText = presentAttendees.join(', ');
+              const leaveText = leaveAttendees.join(', ');
+
+              // Additional attendees placeholder (preserve existing if any)
+              const additionalAttendeesText = row[8] || '';
+
+              // QHLS stays as JSON
+              const qhlsJson = JSON.stringify(qhls || []);
+
               const values = [[
                 meetingId,
                 zoneName || row[1] || '',
                 date || row[2] || '',
                 startTime || '',
                 endTime || '',
-                JSON.stringify(agendas),
-                JSON.stringify(minutes),
-                JSON.stringify(attendance),
-                JSON.stringify(qhls),
+                agendasText,
+                attendeesText,
+                leaveText,
+                additionalAttendeesText,
+                minutesText,
+                qhlsJson,
               ]];
 
               await this.sheets.spreadsheets.values.update({
-                spreadsheetId: this.spreadsheetId,
-                range: `${sheetName}!A${rowIndex}:I${rowIndex}`,
+                spreadsheetId: this.targetSpreadsheetId,
+                range: `${sheetName}!A${rowIndex}:K${rowIndex}`,
                 valueInputOption: 'RAW',
                 resource: {
                   values,
@@ -696,12 +812,12 @@ class GoogleSheetsService {
   }
 
   /**
-   * Save meeting summary to week-specific sheet
+   * Save meeting summary to week-specific sheet (in TARGET spreadsheet)
    */
   async saveMeetingSummary(meetingData) {
     try {
-      if (!this.spreadsheetId) {
-        throw new Error('Spreadsheet ID is not configured');
+      if (!this.targetSpreadsheetId) {
+        throw new Error('Target Spreadsheet ID is not configured');
       }
       
       const {
@@ -724,10 +840,35 @@ class GoogleSheetsService {
       // Generate a unique meeting ID (timestamp-based)
       const meetingId = `MEET-${Date.now()}`;
 
-      // Convert arrays to JSON strings for storage
-      const minutesJson = JSON.stringify(minutes);
-      const attendanceJson = JSON.stringify(attendance);
-      const agendasJson = JSON.stringify(agendas || []);
+      // Format agendas as comma-separated text
+      const agendasText = Array.isArray(agendas) ? agendas.join(', ') : '';
+
+      // Format minutes as comma-separated text
+      const minutesText = Array.isArray(minutes) ? minutes.join(', ') : '';
+
+      // Split attendance into present attendees and leave attendees
+      const presentAttendees = [];
+      const leaveAttendees = [];
+
+      if (Array.isArray(attendance)) {
+        attendance.forEach((item) => {
+          if (item.status === 'present') {
+            presentAttendees.push(item.name);
+          } else if (item.status === 'leave') {
+            const reason = item.reason ? ` (${item.reason})` : '';
+            leaveAttendees.push(`${item.name}${reason}`);
+          }
+        });
+      }
+
+      // Comma-separated strings for attendees and leave
+      const attendeesText = presentAttendees.join(', ');
+      const leaveText = leaveAttendees.join(', ');
+
+      // Additional attendees placeholder (empty for now)
+      const additionalAttendeesText = '';
+
+      // QHLS stays as JSON
       const qhlsJson = JSON.stringify(qhls || []);
 
       const values = [[
@@ -736,16 +877,18 @@ class GoogleSheetsService {
         date,
         startTime || '',
         endTime || '',
-        agendasJson,
-        minutesJson,
-        attendanceJson,
+        agendasText,
+        attendeesText,
+        leaveText,
+        additionalAttendeesText,
+        minutesText,
         qhlsJson,
       ]];
 
-      // Append to the week-specific sheet
+      // Append to the week-specific sheet in TARGET spreadsheet
       const response = await this.sheets.spreadsheets.values.append({
-        spreadsheetId: this.spreadsheetId,
-        range: `${weekSheetName}!A:I`,
+        spreadsheetId: this.targetSpreadsheetId,
+        range: `${weekSheetName}!A:K`,
         valueInputOption: 'RAW',
         insertDataOption: 'INSERT_ROWS',
         resource: {
