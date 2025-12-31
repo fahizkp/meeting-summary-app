@@ -78,10 +78,10 @@ const MeetingForm = () => {
         if (response.success) {
           setZones(response.zones);
         } else {
-          setError('മണ്ഡലങ്ങൾ ലഭിക്കുന്നതിൽ പിശക് (Error fetching zones)');
+          setError('മണ്ഡലങ്ങൾ ലഭിക്കുന്നതിൽ പിശക്');
         }
       } catch (err) {
-        setError('മണ്ഡലങ്ങൾ ലഭിക്കുന്നതിൽ പിശക് (Error fetching zones): ' + err.message);
+        setError('മണ്ഡലങ്ങൾ ലഭിക്കുന്നതിൽ പിശക്: ' + err.message);
       } finally {
         setLoading(false);
       }
@@ -255,10 +255,10 @@ const MeetingForm = () => {
               setZoneUnits(zone.units || []);
             }
           } else {
-            setError('പങ്കെടുക്കുന്നവരെ ലഭിക്കുന്നതിൽ പിശക് (Error fetching attendees)');
+            setError('പങ്കെടുക്കുന്നവരെ ലഭിക്കുന്നതിൽ പിശക്');
           }
         } catch (err) {
-          setError('പങ്കെടുക്കുന്നവരെ ലഭിക്കുന്നതിൽ പിശക് (Error fetching attendees): ' + err.message);
+          setError('പങ്കെടുക്കുന്നവരെ ലഭിക്കുന്നതിൽ പിശക്: ' + err.message);
         } finally {
           setLoading(false);
         }
@@ -340,7 +340,7 @@ const MeetingForm = () => {
       setQhlsData(buildQhlsRows());
     }
 
-    setSuccess(`മീറ്റിംഗ് എഡിറ്റ് ചെയ്യുന്നു (Editing meeting): ${editData.meetingId || ''}`);
+    setSuccess(`മീറ്റിംഗ് എഡിറ്റ് ചെയ്യുന്നു: ${editData.meetingId || ''}`);
   }, [zones]);
 
   useEffect(() => {
@@ -420,7 +420,7 @@ const MeetingForm = () => {
   const handleAddExtraAttendee = (newAttendee) => {
     // Add to attendees list
     setAttendees([...attendees, newAttendee]);
-    
+
     // Initialize attendance for the new attendee
     const attendeeKey = `${newAttendee.name}_${newAttendee.role || ''}`;
     setAttendance({
@@ -495,6 +495,44 @@ const MeetingForm = () => {
   ]);
 
   const formatReportForWhatsApp = (report, meetingData) => {
+    let qhlsFormatted = report.qhlsStatus || 'QHLS ഡാറ്റയില്ല';
+
+    // Format QHLS as a text table if data exists
+    if (qhlsFormatted !== 'QHLS ഡാറ്റയില്ല' && qhlsFormatted.includes(',')) {
+      const lines = qhlsFormatted.split('\n').filter(line => line.trim());
+      if (lines.length > 0) {
+        // Parse data
+        const rows = lines.map(line => line.split(',').map(cell => cell.trim()));
+
+        // Calculate column widths
+        const colWidths = [0, 0, 0, 0, 0];
+        rows.forEach(row => {
+          row.forEach((cell, i) => {
+            if (i < 5 && cell.length > colWidths[i]) {
+              colWidths[i] = cell.length;
+            }
+          });
+        });
+
+        // Helper to pad cell
+        const pad = (str, width) => (str || '').padEnd(width);
+
+        // Build table
+        const separator = ' | ';
+        const header = rows[0];
+        const dataRows = rows.slice(1);
+
+        const headerLine = header.map((cell, i) => pad(cell, colWidths[i])).join(separator);
+        const dividerLine = colWidths.map(w => '-'.repeat(w)).join('-|-');
+
+        const bodyLines = dataRows.map(row =>
+          row.map((cell, i) => pad(cell, colWidths[i])).join(separator)
+        );
+
+        qhlsFormatted = '```\n' + [headerLine, dividerLine, ...bodyLines].join('\n') + '\n```';
+      }
+    }
+
     const lines = [
       `*മീറ്റിംഗ് റിപ്പോർട്ട്*`,
       `━━━━━━━━━━━━━━━━━━━━`,
@@ -517,17 +555,17 @@ const MeetingForm = () => {
       report.minutes || 'തീരുമാനങ്ങളില്ല',
       ``,
       `*QHLS Status:*`,
-      report.qhlsStatus || 'QHLS ഡാറ്റയില്ല',
+      qhlsFormatted,
     ].filter(line => line !== '').join('\n');
-    
+
     return lines;
   };
 
   const handleCopyToWhatsApp = () => {
     if (!reportData) return;
-    
+
     const whatsappText = formatReportForWhatsApp(reportData.report, reportData.meetingData);
-    
+
     navigator.clipboard.writeText(whatsappText).then(() => {
       alert('വാട്സാപ്പിലേക്ക് കോപ്പി ചെയ്തു! (Copied to WhatsApp!)');
     }).catch(() => {
@@ -571,7 +609,7 @@ const MeetingForm = () => {
       padding: 20px 30px;
       background: white;
       font-family: 'Noto Sans Malayalam', 'Malayalam Sangam MN', 'Manjari', Arial, sans-serif;
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.5;
       color: #000;
     `;
@@ -586,16 +624,16 @@ const MeetingForm = () => {
     // Format QHLS as table
     const formatQhlsTable = (qhlsStatus) => {
       if (!qhlsStatus || qhlsStatus === 'QHLS ഡാറ്റയില്ല') {
-        return '<p style="margin: 0; font-size: 13px;">QHLS ഡാറ്റയില്ല</p>';
+        return '<p style="margin: 0; font-size: 14px;">QHLS ഡാറ്റയില്ല</p>';
       }
-      
+
       const lines = qhlsStatus.split('\n').filter(line => line.trim());
       if (lines.length === 0) {
-        return '<p style="margin: 0; font-size: 13px;">QHLS ഡാറ്റയില്ല</p>';
+        return '<p style="margin: 0; font-size: 14px;">QHLS ഡാറ്റയില്ല</p>';
       }
 
       let tableHtml = `
-        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
           <thead>
             <tr style="background-color: #f5f5f5;">
               <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">യൂണിറ്റ്</th>
@@ -607,7 +645,7 @@ const MeetingForm = () => {
           </thead>
           <tbody>
       `;
-      
+
       // Skip the header line (first line) and process data rows
       const dataLines = lines.slice(1);
       dataLines.forEach(line => {
@@ -624,7 +662,7 @@ const MeetingForm = () => {
           `;
         }
       });
-      
+
       tableHtml += '</tbody></table>';
       return tableHtml;
     };
@@ -661,22 +699,22 @@ const MeetingForm = () => {
           
           <div style="margin-bottom: 12px;">
             <h3 style="font-size: 15px; margin: 0 0 6px 0; color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 4px;">പങ്കെടുത്തവർ</h3>
-            <pre style="white-space: pre-wrap; font-family: inherit; margin: 0; font-size: 12px;">${attendeesFormatted}</pre>
+            <pre style="white-space: pre-wrap; font-family: inherit; margin: 0; font-size: 14px;">${attendeesFormatted}</pre>
           </div>
           
           <div style="margin-bottom: 12px;">
             <h3 style="font-size: 15px; margin: 0 0 6px 0; color: #c0392b; border-bottom: 1px solid #ddd; padding-bottom: 4px;">ലീവ് ആയവർ</h3>
-            <pre style="white-space: pre-wrap; font-family: inherit; margin: 0; font-size: 12px;">${leaveFormatted}</pre>
+            <pre style="white-space: pre-wrap; font-family: inherit; margin: 0; font-size: 14px;">${leaveFormatted}</pre>
           </div>
           
           <div style="margin-bottom: 12px;">
             <h3 style="font-size: 15px; margin: 0 0 6px 0; color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 4px;">അജണ്ടകൾ</h3>
-            <pre style="white-space: pre-wrap; font-family: inherit; margin: 0; font-size: 12px;">${reportData.report.agenda || 'അജണ്ടകളില്ല'}</pre>
+            <pre style="white-space: pre-wrap; font-family: inherit; margin: 0; font-size: 14px;">${reportData.report.agenda || 'അജണ്ടകളില്ല'}</pre>
           </div>
           
           <div style="margin-bottom: 12px;">
             <h3 style="font-size: 15px; margin: 0 0 6px 0; color: #27ae60; border-bottom: 1px solid #ddd; padding-bottom: 4px;">തീരുമാനങ്ങൾ</h3>
-            <pre style="white-space: pre-wrap; font-family: inherit; margin: 0; font-size: 12px;">${reportData.report.minutes || 'തീരുമാനങ്ങളില്ല'}</pre>
+            <pre style="white-space: pre-wrap; font-family: inherit; margin: 0; font-size: 14px;">${reportData.report.minutes || 'തീരുമാനങ്ങളില്ല'}</pre>
           <div style="margin-bottom: 12px;">
             <h3 style="font-size: 15px; margin: 0 0 6px 0; color: #8e44ad; border-bottom: 1px solid #ddd; padding-bottom: 4px;">QHLS</h3>
             ${formatQhlsTable(reportData.report.qhlsStatus)}
@@ -698,20 +736,20 @@ const MeetingForm = () => {
 
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-      
+
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
-      
+
       // Calculate dimensions to fit the page
       const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
       const imgX = (pdfWidth - imgWidth * ratio) / 2;
       const imgY = 10;
-      
+
       // Handle multi-page if content is too long
       const scaledHeight = imgHeight * ratio;
-      
+
       if (scaledHeight <= pdfHeight - 20) {
         // Fits on one page
         pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, scaledHeight);
@@ -720,13 +758,13 @@ const MeetingForm = () => {
         let remainingHeight = imgHeight;
         let position = 0;
         const pageHeightInPx = (pdfHeight - 20) / ratio;
-        
+
         while (remainingHeight > 0) {
           // Create a temporary canvas for this page section
           const pageCanvas = document.createElement('canvas');
           pageCanvas.width = imgWidth;
           pageCanvas.height = Math.min(pageHeightInPx, remainingHeight);
-          
+
           const ctx = pageCanvas.getContext('2d');
           ctx.drawImage(
             canvas,
@@ -735,22 +773,22 @@ const MeetingForm = () => {
             0, 0,
             imgWidth, pageCanvas.height
           );
-          
+
           const pageImgData = pageCanvas.toDataURL('image/png');
-          
+
           if (position > 0) {
             pdf.addPage();
           }
-          
+
           pdf.addImage(
-            pageImgData, 
-            'PNG', 
-            imgX, 
-            imgY, 
-            imgWidth * ratio, 
+            pageImgData,
+            'PNG',
+            imgX,
+            imgY,
+            imgWidth * ratio,
             pageCanvas.height * ratio
           );
-          
+
           remainingHeight -= pageHeightInPx;
           position += pageHeightInPx;
         }
@@ -836,7 +874,7 @@ const MeetingForm = () => {
         );
         setIsEditing(false);
         setEditingMeetingId(null);
-        
+
         // Fetch and display report
         try {
           const reportResponse = await getMeetingReport(meetingId);
@@ -847,7 +885,7 @@ const MeetingForm = () => {
         } catch (err) {
           console.error('Error fetching report:', err);
         }
-        
+
         // Reset form
         clearDraftStorage();
         setSelectedZone('');
@@ -953,9 +991,9 @@ const MeetingForm = () => {
             className="submit-button btn-success"
             disabled={submitting || !selectedZone}
           >
-          {submitting
-            ? (isEditing ? 'Updating...' : 'സേവ് ചെയ്യുന്നു...')
-            : (isEditing ? 'Update' : 'സേവ് ചെയ്യുക')}
+            {submitting
+              ? (isEditing ? 'Updating...' : 'സേവ് ചെയ്യുന്നു...')
+              : (isEditing ? 'Update' : 'സേവ് ചെയ്യുക')}
           </button>
         </div>
       </form>
@@ -968,7 +1006,7 @@ const MeetingForm = () => {
               <h2>റിപ്പോർട്ട് പ്രിവ്യൂ (Report Preview)</h2>
               <button onClick={handleClosePreview} className="close-button">×</button>
             </div>
-            
+
             <div className="report-preview-body">
               <div className="report-section">
                 <h3>മീറ്റിംഗ് വിവരങ്ങൾ (Meeting Details)</h3>

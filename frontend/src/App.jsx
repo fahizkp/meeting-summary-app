@@ -6,17 +6,21 @@ import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import { logout, getUser } from './services/auth';
 
+import Dashboard from './components/Dashboard';
+
 // Layout component for authenticated pages
 const AuthenticatedLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState(location.pathname === '/report' ? 'report' : 'form');
+  const [activeTab, setActiveTab] = useState('form');
   const user = getUser();
 
   useEffect(() => {
     // Update active tab when route changes
     if (location.pathname === '/report') {
       setActiveTab('report');
+    } else if (location.pathname === '/dashboard') {
+      setActiveTab('dashboard');
     } else {
       setActiveTab('form');
     }
@@ -31,78 +35,112 @@ const AuthenticatedLayout = ({ children }) => {
     setActiveTab(tab);
     if (tab === 'report') {
       navigate('/report');
+    } else if (tab === 'dashboard') {
+      navigate('/dashboard');
     } else {
       navigate('/');
     }
   };
 
+  const navStyles = {
+    container: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px',
+      marginBottom: '24px',
+      padding: '16px',
+      background: 'linear-gradient(135deg, #f8f9fa, #ffffff)',
+      borderRadius: '16px',
+      boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+    },
+    tabsRow: {
+      display: 'flex',
+      gap: '8px',
+      flexWrap: 'wrap',
+    },
+    tab: (isActive) => ({
+      flex: '1',
+      minWidth: '100px',
+      padding: '12px 16px',
+      background: isActive
+        ? 'linear-gradient(135deg, #6c5ce7, #5549c7)'
+        : 'linear-gradient(135deg, #e0e0e0, #bdbdbd)',
+      color: 'white',
+      border: 'none',
+      borderRadius: '12px',
+      cursor: 'pointer',
+      fontFamily: 'Noto Sans Malayalam, sans-serif',
+      fontSize: '0.9rem',
+      fontWeight: '600',
+      transition: 'all 0.2s ease',
+      boxShadow: isActive ? '0 4px 15px rgba(108, 92, 231, 0.3)' : 'none',
+    }),
+    userRow: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingTop: '12px',
+      borderTop: '1px solid #e0e0e0',
+    },
+    username: {
+      color: '#6c5ce7',
+      fontSize: '14px',
+      fontWeight: '500',
+      background: '#f0f0ff',
+      padding: '6px 12px',
+      borderRadius: '20px',
+    },
+    logoutBtn: {
+      padding: '10px 20px',
+      background: 'linear-gradient(135deg, #ff7675, #e74c3c)',
+      color: 'white',
+      border: 'none',
+      borderRadius: '10px',
+      cursor: 'pointer',
+      fontFamily: 'Noto Sans Malayalam, sans-serif',
+      fontSize: '0.85rem',
+      fontWeight: '600',
+      transition: 'all 0.2s ease',
+    },
+  };
+
   return (
     <div>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '20px',
-        borderBottom: '2px solid #ecf0f1',
-        paddingBottom: '10px'
-      }}>
-        <div style={{ display: 'flex' }}>
+      <nav style={navStyles.container}>
+        <div style={navStyles.tabsRow}>
           <button
             onClick={() => handleTabChange('form')}
-            style={{
-              padding: '10px 20px',
-              margin: '0 10px',
-              backgroundColor: activeTab === 'form' ? '#3498db' : '#95a5a6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontFamily: 'Noto Sans Malayalam, sans-serif',
-              fontSize: '1rem',
-            }}
+            style={navStyles.tab(activeTab === 'form')}
           >
-            മീറ്റിംഗ് ഫോം (Meeting Form)
+            മീറ്റിംഗ് ഫോം
           </button>
           <button
             onClick={() => handleTabChange('report')}
-            style={{
-              padding: '10px 20px',
-              margin: '0 10px',
-              backgroundColor: activeTab === 'report' ? '#3498db' : '#95a5a6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontFamily: 'Noto Sans Malayalam, sans-serif',
-              fontSize: '1rem',
-            }}
+            style={navStyles.tab(activeTab === 'report')}
           >
-            റിപ്പോർട്ട് (Report)
+            റിപ്പോർട്ട്
+          </button>
+          <button
+            onClick={() => handleTabChange('dashboard')}
+            style={navStyles.tab(activeTab === 'dashboard')}
+          >
+            ഡാഷ്ബോർഡ്
           </button>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <div style={navStyles.userRow}>
           {user && (
-            <span style={{ color: '#7f8c8d', fontSize: '14px' }}>
+            <span style={navStyles.username}>
               {user.username}
             </span>
           )}
           <button
             onClick={handleLogout}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#e74c3c',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontFamily: 'Noto Sans Malayalam, sans-serif',
-              fontSize: '0.9rem',
-            }}
+            style={navStyles.logoutBtn}
           >
-            ലോഗൗട്ട് (Logout)
+            ലോഗൗട്ട്
           </button>
         </div>
-      </div>
+      </nav>
       {children}
     </div>
   );
@@ -112,25 +150,42 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route 
-        path="/" 
+      <Route
+        path="/"
         element={
           <ProtectedRoute>
             <AuthenticatedLayout>
               <MeetingForm />
             </AuthenticatedLayout>
           </ProtectedRoute>
-        } 
+        }
       />
-      <Route 
-        path="/report" 
+      <Route
+        path="/report"
         element={
           <ProtectedRoute>
             <AuthenticatedLayout>
               <MeetingReport />
             </AuthenticatedLayout>
           </ProtectedRoute>
-        } 
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedLayout>
+              <Dashboard onNavigate={(id) => {
+                // Navigation not fully implemented for view details from dashboard yet
+                // But typically would go to report view with query param or specific route
+                // For now, we'll re-use MeetingReport logic if possible or just navigate to report list
+                // Since Routing doesn't support /report/:id directly in the definition above, we might need to adjust.
+                // Actually MeetingReport listens to state or just shows list.
+                // We can make Dashboard pass state to navigate.
+              }} />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
       />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

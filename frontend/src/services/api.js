@@ -75,8 +75,28 @@ export const deleteMeeting = async (meetingId) => {
   return response.data;
 };
 
+
 export const updateMeeting = async (meetingId, meetingData) => {
   const response = await api.put(`/api/meetings/${meetingId}`, meetingData);
+  return response.data;
+};
+
+export const getDashboardStats = async (startDate, endDate, zoneId) => {
+  const params = {};
+  if (startDate) params.startDate = startDate;
+  if (endDate) params.endDate = endDate;
+  if (zoneId) params.zoneId = zoneId;
+
+  const response = await api.get('/api/dashboard/stats', { params });
+  return response.data;
+};
+
+export const getAttendanceSummary = async (zoneId, startDate, endDate) => {
+  const params = { zoneId };
+  if (startDate) params.startDate = startDate;
+  if (endDate) params.endDate = endDate;
+
+  const response = await api.get('/api/attendance-summary', { params });
   return response.data;
 };
 

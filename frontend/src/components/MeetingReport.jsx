@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { getAllMeetings, getMeetingReport, deleteMeeting } from '../services/api';
 
 const MeetingReport = () => {
@@ -10,10 +10,20 @@ const MeetingReport = () => {
   const [selectedMeetingData, setSelectedMeetingData] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     fetchMeetings();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.viewMeetingId) {
+      handleView(location.state.viewMeetingId);
+      // Clear state to avoid reopening on refresh, but careful not to trigger re-renders loop if not needed.
+      // Actually navigate replace is safer but might interrupt current view if it depends on meeting loaded.
+      // For now, duplicate call protection isn't strictly necessary as it's just a fetch.
+    }
+  }, [location.state]);
 
   const fetchMeetings = async () => {
     setLoading(true);
@@ -103,6 +113,38 @@ const MeetingReport = () => {
   const handleCopyReport = () => {
     if (!selectedReport || !selectedMeetingData) return;
 
+    let qhlsFormatted = selectedReport.qhlsStatus || 'QHLS ഡാറ്റയില്ല';
+
+    // Format QHLS as a text table if data exists
+    if (qhlsFormatted !== 'QHLS ഡാറ്റയില്ല' && qhlsFormatted.includes(',')) {
+      const lines = qhlsFormatted.split('\n').filter(line => line.trim());
+      if (lines.length > 0) {
+        const rows = lines.map(line => line.split(',').map(cell => cell.trim()));
+        const colWidths = [0, 0, 0, 0, 0];
+        rows.forEach(row => {
+          row.forEach((cell, i) => {
+            if (i < 5 && cell.length > colWidths[i]) {
+              colWidths[i] = cell.length;
+            }
+          });
+        });
+
+        const pad = (str, width) => (str || '').padEnd(width);
+        const separator = ' | ';
+        const header = rows[0];
+        const dataRows = rows.slice(1);
+
+        const headerLine = header.map((cell, i) => pad(cell, colWidths[i])).join(separator);
+        const dividerLine = colWidths.map(w => '-'.repeat(w)).join('-|-');
+
+        const bodyLines = dataRows.map(row =>
+          row.map((cell, i) => pad(cell, colWidths[i])).join(separator)
+        );
+
+        qhlsFormatted = '```\n' + [headerLine, dividerLine, ...bodyLines].join('\n') + '\n```';
+      }
+    }
+
     const reportText = `മീറ്റിംഗ് റിപ്പോർട്ട്
 ━━━━━━━━━━━━━━━━━━━━
 മണ്ഡലം: ${selectedMeetingData.zoneName}
@@ -124,7 +166,7 @@ ${selectedReport.agenda || 'അജണ്ടകളില്ല'}
 ${selectedReport.minutes || 'തീരുമാനങ്ങളില്ല'}
 
 QHLS Status:
-${selectedReport.qhlsStatus || 'QHLS ഡാറ്റയില്ല'}`;
+${qhlsFormatted}`;
 
     navigator.clipboard.writeText(reportText).then(() => {
       alert('റിപ്പോർട്ട് കോപ്പി ചെയ്തു! (Report copied!)');
@@ -136,10 +178,10 @@ ${selectedReport.qhlsStatus || 'QHLS ഡാറ്റയില്ല'}`;
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
   };
 
@@ -167,8 +209,8 @@ ${selectedReport.qhlsStatus || 'QHLS ഡാറ്റയില്ല'}`;
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ 
-                width: '100%', 
+              <table style={{
+                width: '100%',
                 borderCollapse: 'collapse',
                 backgroundColor: '#fff',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
@@ -184,8 +226,8 @@ ${selectedReport.qhlsStatus || 'QHLS ഡാറ്റയില്ല'}`;
                 </thead>
                 <tbody>
                   {meetings.map((meeting, index) => (
-                    <tr key={meeting.meetingId} style={{ 
-                      backgroundColor: index % 2 === 0 ? '#fff' : '#f9f9f9' 
+                    <tr key={meeting.meetingId} style={{
+                      backgroundColor: index % 2 === 0 ? '#fff' : '#f9f9f9'
                     }}>
                       <td style={{ padding: '12px', border: '1px solid #ddd' }}>{index + 1}</td>
                       <td style={{ padding: '12px', border: '1px solid #ddd' }}>

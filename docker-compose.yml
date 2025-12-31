@@ -1,0 +1,44 @@
+services:
+  backend:
+    image: ghcr.io/fahizkp/meeting-summary-backend:latest
+    container_name: meeting-summary-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PORT=3001
+      - CORS_ORIGIN=https://meeting.wisdommlpe.site
+    networks:
+      - web
+      - meeting-summary-internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.meeting-summary-backend.rule=Host(`meeting.wisdommlpe.site`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.meeting-summary-backend.entrypoints=websecure"
+      - "traefik.http.routers.meeting-summary-backend.tls=true"
+      - "traefik.http.routers.meeting-summary-backend.tls.certresolver=myresolver"
+      - "traefik.http.services.meeting-summary-backend.loadbalancer.server.port=3001"
+
+  frontend:
+    image: ghcr.io/fahizkp/meeting-summary-frontend:latest
+    container_name: meeting-summary-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - web
+      - meeting-summary-internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.meeting-summary-frontend.rule=Host(`meeting.wisdommlpe.site`)"
+      - "traefik.http.routers.meeting-summary-frontend.entrypoints=websecure"
+      - "traefik.http.routers.meeting-summary-frontend.tls=true"
+      - "traefik.http.routers.meeting-summary-frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.meeting-summary-frontend.loadbalancer.server.port=80"
+
+networks:
+  web:
+    external: true
+  meeting-summary-internal:

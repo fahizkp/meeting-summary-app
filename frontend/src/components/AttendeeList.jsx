@@ -12,92 +12,249 @@ const AttendeeList = ({ attendees, attendance, onAttendanceChange, onAbsenceReas
     }
   };
 
+  const styles = {
+    emptyState: {
+      textAlign: 'center',
+      padding: '24px',
+      color: '#9e9e9e',
+      fontStyle: 'italic',
+      background: 'linear-gradient(135deg, #f5f5f5, #eeeeee)',
+      borderRadius: '12px',
+      border: '2px dashed #e0e0e0',
+    },
+    attendeeCard: {
+      padding: '16px',
+      marginBottom: '12px',
+      background: '#ffffff',
+      borderRadius: '12px',
+      border: '2px solid #eeeeee',
+      transition: 'all 0.2s ease',
+    },
+    attendeeName: {
+      fontWeight: '600',
+      fontSize: '1rem',
+      color: '#424242',
+      marginBottom: '12px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+    },
+    roleTag: {
+      fontSize: '0.75rem',
+      padding: '4px 10px',
+      background: 'linear-gradient(135deg, #a29bfe, #6c5ce7)',
+      color: 'white',
+      borderRadius: '20px',
+      fontWeight: '500',
+    },
+    radioContainer: {
+      display: 'flex',
+      gap: '16px',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+    },
+    radioLabel: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      padding: '8px 16px',
+      borderRadius: '20px',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      fontSize: '0.9rem',
+      fontWeight: '500',
+    },
+    presentLabel: (isChecked) => ({
+      background: isChecked ? 'linear-gradient(135deg, #00b894, #00a884)' : '#f5f5f5',
+      color: isChecked ? 'white' : '#616161',
+      border: isChecked ? 'none' : '1px solid #e0e0e0',
+    }),
+    leaveLabel: (isChecked) => ({
+      background: isChecked ? 'linear-gradient(135deg, #ff7675, #e74c3c)' : '#f5f5f5',
+      color: isChecked ? 'white' : '#616161',
+      border: isChecked ? 'none' : '1px solid #e0e0e0',
+    }),
+    hiddenRadio: {
+      position: 'absolute',
+      opacity: 0,
+      pointerEvents: 'none',
+    },
+    reasonInput: {
+      marginTop: '12px',
+      width: '100%',
+      padding: '12px 16px',
+      border: '2px solid #fab1a0',
+      borderRadius: '10px',
+      fontSize: '0.9rem',
+      background: '#fff5f5',
+    },
+    addSection: {
+      marginTop: '20px',
+      padding: '20px',
+      background: 'linear-gradient(135deg, #f0f0ff, #e8e8ff)',
+      borderRadius: '16px',
+      border: '2px solid #a29bfe',
+    },
+    addTitle: {
+      marginTop: 0,
+      marginBottom: '16px',
+      fontSize: '1rem',
+      color: '#6c5ce7',
+      fontWeight: '600',
+    },
+    inputGroup: {
+      display: 'flex',
+      gap: '12px',
+      flexWrap: 'wrap',
+      alignItems: 'flex-end',
+    },
+    inputWrapper: {
+      flex: 1,
+      minWidth: '150px',
+    },
+    inputLabel: {
+      display: 'block',
+      marginBottom: '6px',
+      fontSize: '0.85rem',
+      color: '#616161',
+      fontWeight: '500',
+    },
+    input: {
+      width: '100%',
+      padding: '12px 16px',
+      border: '2px solid #e0e0e0',
+      borderRadius: '10px',
+      fontSize: '0.95rem',
+      transition: 'all 0.2s ease',
+    },
+    addButton: {
+      padding: '12px 24px',
+      background: 'linear-gradient(135deg, #00b894, #00a884)',
+      color: 'white',
+      border: 'none',
+      borderRadius: '10px',
+      fontSize: '0.9rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      minWidth: '120px',
+      justifyContent: 'center',
+    },
+    addButtonDisabled: {
+      background: '#bdbdbd',
+      cursor: 'not-allowed',
+    },
+  };
+
   if (!attendees || attendees.length === 0) {
     return (
       <div className="form-group">
-        <label>പങ്കെടുത്തവർ:</label>
-        <p style={{ color: '#7f8c8d', fontStyle: 'italic' }}>
-          ദയവായി ഒരു മണ്ഡലം തിരഞ്ഞെടുക്കുക (Please select a zone)
-        </p>
+        <label>പങ്കെടുത്തവർ</label>
+        <div style={styles.emptyState}>
+          ദയവായി ഒരു മണ്ഡലം തിരഞ്ഞെടുക്കുക
+        </div>
       </div>
     );
   }
 
   return (
     <div className="form-group">
-      <label>പങ്കെടുത്തവർ:</label>
+      <label>പങ്കെടുത്തവർ ({attendees.length})</label>
+
       {attendees.map((attendee, index) => {
         const attendeeKey = `${attendee.name}_${attendee.role || ''}`;
         const currentAttendance = attendance[attendeeKey] || { status: 'present', reason: '' };
+        const isPresent = currentAttendance.status === 'present';
+        const isLeave = currentAttendance.status === 'leave';
 
         return (
-          <div key={index} className="attendee-item">
-            <div className="attendee-name">
-              {attendee.name}
-              {attendee.role && <span className="attendee-role"> ({attendee.role})</span>}
-            </div>
-            <div className="attendance-controls">
-              <div className="radio-group">
-                <div className="radio-option">
-                  <input
-                    type="radio"
-                    id={`present-${index}`}
-                    name={`attendance-${index}`}
-                    value="present"
-                    checked={currentAttendance.status === 'present'}
-                    onChange={() => onAttendanceChange(attendeeKey, 'present', '')}
-                  />
-                  <label htmlFor={`present-${index}`}>Present</label>
-                </div>
-                <div className="radio-option">
-                  <input
-                    type="radio"
-                    id={`leave-${index}`}
-                    name={`attendance-${index}`}
-                    value="leave"
-                    checked={currentAttendance.status === 'leave'}
-                    onChange={() => onAttendanceChange(attendeeKey, 'leave', '')}
-                  />
-                  <label htmlFor={`leave-${index}`}>Leave</label>
-                </div>
-              </div>
-              {currentAttendance.status === 'leave' && (
-                <input
-                  type="text"
-                  className="absence-reason"
-                  placeholder="ലീവ് കാരണം"
-                  value={currentAttendance.reason || ''}
-                  onChange={(e) => onAbsenceReasonChange(attendeeKey, e.target.value)}
-                />
+          <div
+            key={index}
+            style={{
+              ...styles.attendeeCard,
+              borderColor: isPresent ? '#55efc4' : isLeave ? '#fab1a0' : '#eeeeee',
+            }}
+          >
+            <div style={styles.attendeeName}>
+              <span>{attendee.name}</span>
+              {attendee.role && (
+                <span style={styles.roleTag}>{attendee.role}</span>
               )}
             </div>
+
+            <div style={styles.radioContainer}>
+              <label
+                style={{
+                  ...styles.radioLabel,
+                  ...styles.presentLabel(isPresent),
+                }}
+              >
+                <input
+                  type="radio"
+                  name={`attendance-${index}`}
+                  value="present"
+                  checked={isPresent}
+                  onChange={() => onAttendanceChange(attendeeKey, 'present', '')}
+                  style={styles.hiddenRadio}
+                />
+                Present
+              </label>
+
+              <label
+                style={{
+                  ...styles.radioLabel,
+                  ...styles.leaveLabel(isLeave),
+                }}
+              >
+                <input
+                  type="radio"
+                  name={`attendance-${index}`}
+                  value="leave"
+                  checked={isLeave}
+                  onChange={() => onAttendanceChange(attendeeKey, 'leave', '')}
+                  style={styles.hiddenRadio}
+                />
+                Leave
+              </label>
+            </div>
+
+            {isLeave && (
+              <input
+                type="text"
+                placeholder="ലീവ് കാരണം എഴുതുക..."
+                value={currentAttendance.reason || ''}
+                onChange={(e) => onAbsenceReasonChange(attendeeKey, e.target.value)}
+                style={styles.reasonInput}
+              />
+            )}
           </div>
         );
       })}
-      
-      <div style={{ marginTop: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '5px', backgroundColor: '#f9f9f9' }}>
-        <h4 style={{ marginTop: 0, marginBottom: '10px' }}>അധിക പങ്കെടുത്തവർ ചേർക്കുക (Add Extra Attendees):</h4>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-          <div style={{ flex: '1', minWidth: '200px' }}>
-            <label htmlFor="extra-name" style={{ display: 'block', marginBottom: '5px', fontSize: '14px' }}>പേര് (Name):</label>
+
+      <div style={styles.addSection}>
+        <h4 style={styles.addTitle}>അധിക പങ്കെടുത്തവർ ചേർക്കുക</h4>
+        <div style={styles.inputGroup}>
+          <div style={styles.inputWrapper}>
+            <label style={styles.inputLabel}>പേര്</label>
             <input
               type="text"
-              id="extra-name"
               value={extraName}
               onChange={(e) => setExtraName(e.target.value)}
-              placeholder="പേര്"
-              style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+              placeholder="പേര് എഴുതുക"
+              style={styles.input}
             />
           </div>
-          <div style={{ flex: '1', minWidth: '200px' }}>
-            <label htmlFor="extra-role" style={{ display: 'block', marginBottom: '5px', fontSize: '14px' }}>റോൾ (Role):</label>
+          <div style={styles.inputWrapper}>
+            <label style={styles.inputLabel}>റോൾ</label>
             <input
               type="text"
-              id="extra-role"
               value={extraRole}
               onChange={(e) => setExtraRole(e.target.value)}
-              placeholder="റോൾ"
-              style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+              placeholder="റോൾ എഴുതുക"
+              style={styles.input}
             />
           </div>
           <button
@@ -105,13 +262,8 @@ const AttendeeList = ({ attendees, attendance, onAttendanceChange, onAbsenceReas
             onClick={handleAddExtra}
             disabled={!extraName.trim()}
             style={{
-              padding: '8px 16px',
-              backgroundColor: '#28a745',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: extraName.trim() ? 'pointer' : 'not-allowed',
-              opacity: extraName.trim() ? 1 : 0.6
+              ...styles.addButton,
+              ...(extraName.trim() ? {} : styles.addButtonDisabled),
             }}
           >
             + ചേർക്കുക
@@ -123,4 +275,3 @@ const AttendeeList = ({ attendees, attendance, onAttendanceChange, onAbsenceReas
 };
 
 export default AttendeeList;
-

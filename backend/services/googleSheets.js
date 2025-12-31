@@ -533,6 +533,19 @@ class GoogleSheetsService {
               const timestamp = row[0].replace('MEET-', '');
               const savedDate = new Date(parseInt(timestamp));
               
+              // Parse attendance data for dashboard
+              const attendeesText = row[6] || '';
+              const leaveText = row[7] || '';
+              const attendance = this.parseAttendanceFromColumns(attendeesText, leaveText);
+              
+              // Parse basic QHLS for dashboard
+              let qhls = [];
+              try {
+                qhls = row[10] ? JSON.parse(row[10]) : [];
+              } catch (e) {
+                qhls = [];
+              }
+
               allMeetings.push({
                 meetingId: row[0],
                 zoneName: row[1] || '',
@@ -540,7 +553,9 @@ class GoogleSheetsService {
                 savedDate: savedDate.toISOString().split('T')[0], // YYYY-MM-DD format
                 savedDateTime: savedDate.toISOString(),
                 sheetName: sheetName,
-                rowIndex: i + 2, // +2 because we skip header and arrays are 0-indexed
+                rowIndex: i + 2,
+                attendance, // Add attendance for analytics
+                qhls, // Add QHLS for analytics
               });
             }
           }
@@ -556,6 +571,104 @@ class GoogleSheetsService {
       return allMeetings;
     } catch (error) {
       console.error('Error fetching all meetings:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get meetings within a date range (from TARGET spreadsheet)
+   * @param {string} startDate - YYYY-MM-DD
+   * @param {string} endDate - YYYY-MM-DD
+   */
+  async getMeetingsByDateRange(startDate, endDate) {
+    try {
+      if (!this.targetSpreadsheetId) {
+        throw new Error('Target Spreadsheet ID is not configured');
+      }
+
+      // Get all sheets from TARGET spreadsheet
+      const spreadsheet = await this.sheets.spreadsheets.get({
+        spreadsheetId: this.targetSpreadsheetId,
+      });
+
+      const sheets = spreadsheet.data.sheets || [];
+      const allMeetings = [];
+      
+      const start = startDate ? new Date(startDate) : null;
+      const end = endDate ? new Date(endDate) : null;
+      if (end) end.setHours(23, 59, 59, 999); // Include the end date fully
+
+      // Search through all week sheets
+      for (const sheet of sheets) {
+        const sheetName = sheet.properties.title;
+        // Skip non-week sheets
+        if (sheetName === 'ZoneData' || sheetName === 'Agenda' || sheetName === 'MeetingSummaries' || sheetName === 'Users') {
+          continue;
+        }
+
+        try {
+          const response = await this.sheets.spreadsheets.values.get({
+            spreadsheetId: this.targetSpreadsheetId,
+            range: `${sheetName}!A2:K`, // Skip header row
+          });
+
+          const rows = response.data.values || [];
+          
+          for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            if (row && row[0] && row[0].startsWith('MEET-')) {
+              const meetingDateStr = row[2]; // Date column
+              if (!meetingDateStr) continue;
+
+              const meetingDate = new Date(meetingDateStr);
+              
+              // Filter by date range
+              if (start && meetingDate < start) continue;
+              if (end && meetingDate > end) continue;
+
+              // Parse attendance data
+              const attendeesText = row[6] || '';
+              const leaveText = row[7] || '';
+              const attendance = this.parseAttendanceFromColumns(attendeesText, leaveText);
+              
+              // Parse basic QHLS
+              let qhls = [];
+              try {
+                qhls = row[10] ? JSON.parse(row[10]) : [];
+              } catch (e) {
+                qhls = [];
+              }
+
+              // Parse Minutes (array)
+              const minutesText = row[9] || '';
+              const minutes = minutesText ? minutesText.split(',').map(m => m.trim()).filter(Boolean) : [];
+
+              allMeetings.push({
+                meetingId: row[0],
+                zoneName: row[1] || '',
+                date: meetingDateStr,
+                startTime: row[3] || '',
+                endTime: row[4] || '',
+                attendance,
+                qhls,
+                minutes,
+                sheetName: sheetName,
+                rowIndex: i + 2,
+              });
+            }
+          }
+        } catch (error) {
+          console.error(`Error reading sheet ${sheetName}:`, error.message);
+          continue;
+        }
+      }
+
+      // Sort by date (newest first)
+      allMeetings.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      return allMeetings;
+    } catch (error) {
+      console.error('Error fetching meetings by date range:', error);
       throw error;
     }
   }

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"C:\\\\Users\\\\Coder\\\\Documents\\\\GitHub\\\\meeting-summary-app\\\\frontend\\\\src\\\\components\")",
+      "Bash(dir:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:ecme-react.themenate.net)",
+      "Bash(npm run dev:*)"
+    ]
+  }
+}
