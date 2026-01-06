@@ -49,7 +49,8 @@ router.post('/login', express.json(), async (req, res) => {
     const token = jwt.sign(
       {
         username: user.username,
-        role: user.role,
+        roles: user.roles || [],
+        zoneAccess: user.zoneAccess || [],
       },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRY }
@@ -62,7 +63,8 @@ router.post('/login', express.json(), async (req, res) => {
         token,
         user: {
           username: user.username,
-          role: user.role,
+          roles: user.roles || [],
+          zoneAccess: user.zoneAccess || [],
         },
       },
     });

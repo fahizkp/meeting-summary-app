@@ -86,3 +86,95 @@ export const verifyToken = async () => {
   }
 };
 
+/**
+ * Check if user has a specific role
+ */
+export const hasRole = (role) => {
+  const user = getUser();
+  if (!user || !user.roles) return false;
+  return user.roles.includes(role);
+};
+
+/**
+ * Check if user has any of the specified roles
+ */
+export const hasAnyRole = (roles) => {
+  const user = getUser();
+  if (!user || !user.roles) return false;
+  return roles.some(role => user.roles.includes(role));
+};
+
+/**
+ * Check if user can access a specific zone
+ */
+export const canAccessZone = (zoneId) => {
+  const user = getUser();
+  if (!user) return false;
+  
+  // Admin and district_admin can access all zones
+  if (hasAnyRole(['admin', 'district_admin'])) {
+    return true;
+  }
+  
+  // Zone admin can access their assigned zones
+  if (hasRole('zone_admin')) {
+    return user.zoneAccess && user.zoneAccess.includes(zoneId);
+  }
+  
+  return false;
+};
+
+/**
+ * Check if user can edit meetings
+ */
+export const canEditMeetings = () => {
+  return hasAnyRole(['zone_admin', 'admin']);
+};
+
+/**
+ * Check if user can edit a specific meeting
+ */
+export const canEditMeeting = (meeting) => {
+  const user = getUser();
+  if (!user) return false;
+  
+  // Admin can edit any meeting
+  if (hasRole('admin')) {
+    return true;
+  }
+  
+  // District admin cannot edit (read-only)
+  if (hasRole('district_admin') && !hasRole('zone_admin')) {
+    return false;
+  }
+  
+  // Zone admin can edit meetings from their zones
+  if (hasRole('zone_admin') && meeting && meeting.zoneName) {
+    // Need to check if the zone ID matches
+    // For now, we'll need to get the zone ID from the meeting
+    return canAccessZone(meeting.zoneId || meeting.zoneName);
+  }
+  
+  return false;
+};
+
+/**
+ * Get accessible zones for the current user
+ */
+export const getAccessibleZones = () => {
+  const user = getUser();
+  if (!user) return [];
+  
+  // Admin and district_admin can access all zones (return null to indicate all)
+  if (hasAnyRole(['admin', 'district_admin'])) {
+    return null; // null means all zones
+  }
+  
+  // Zone admin can access their assigned zones
+  if (hasRole('zone_admin')) {
+    return user.zoneAccess || [];
+  }
+  
+  return [];
+};
+

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getAllMeetings, getMeetingReport, deleteMeeting } from '../services/api';
+import { getAccessibleZones, canEditMeetings, hasAnyRole, getUser } from '../services/auth';
+import { filterMeetingsByZoneAccess } from '../services/zoneHelper';
 
 const MeetingReport = () => {
   const [meetings, setMeetings] = useState([]);
@@ -11,6 +13,10 @@ const MeetingReport = () => {
   const [deletingId, setDeletingId] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Check if user can edit meetings
+  const userCanEdit = canEditMeetings();
+  const accessibleZones = getAccessibleZones();
 
   useEffect(() => {
     fetchMeetings();
@@ -31,7 +37,13 @@ const MeetingReport = () => {
     try {
       const response = await getAllMeetings();
       if (response.success) {
-        setMeetings(response.meetings || []);
+        const allMeetings = response.meetings || [];
+        const accessibleZoneIds = getAccessibleZones();
+
+        // Filter meetings based on user's zone access using zone helper
+        const filteredMeetings = filterMeetingsByZoneAccess(allMeetings, accessibleZoneIds);
+
+        setMeetings(filteredMeetings);
       } else {
         setError('മീറ്റിംഗുകൾ ലഭിക്കുന്നതിൽ പിശക് (Error fetching meetings)');
       }
@@ -255,36 +267,41 @@ ${qhlsFormatted}`;
                           >
                             View
                           </button>
-                          <button
-                            onClick={() => handleEdit(meeting.meetingId)}
-                            style={{
-                              padding: '6px 12px',
-                              backgroundColor: '#f39c12',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '14px'
-                            }}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(meeting.meetingId)}
-                            disabled={deletingId === meeting.meetingId}
-                            style={{
-                              padding: '6px 12px',
-                              backgroundColor: '#e74c3c',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '4px',
-                              cursor: deletingId === meeting.meetingId ? 'not-allowed' : 'pointer',
-                              opacity: deletingId === meeting.meetingId ? 0.6 : 1,
-                              fontSize: '14px'
-                            }}
-                          >
-                            {deletingId === meeting.meetingId ? 'Deleting...' : 'Delete'}
-                          </button>
+                          {/* Only show edit/delete buttons if user can edit meetings */}
+                          {userCanEdit && (
+                            <>
+                              <button
+                                onClick={() => handleEdit(meeting.meetingId)}
+                                style={{
+                                  padding: '6px 12px',
+                                  backgroundColor: '#f39c12',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontSize: '14px'
+                                }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(meeting.meetingId)}
+                                disabled={deletingId === meeting.meetingId}
+                                style={{
+                                  padding: '6px 12px',
+                                  backgroundColor: '#e74c3c',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: deletingId === meeting.meetingId ? 'not-allowed' : 'pointer',
+                                  opacity: deletingId === meeting.meetingId ? 0.6 : 1,
+                                  fontSize: '14px'
+                                }}
+                              >
+                                {deletingId === meeting.meetingId ? 'Deleting...' : 'Delete'}
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

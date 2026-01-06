@@ -218,6 +218,9 @@ class GoogleSheetsService {
 
   /**
    * Get user by username from Users sheet (from SOURCE spreadsheet)
+   * New format: Username | Password | Roles | ZoneAccess | CreatedDate
+   * Roles: comma-separated (e.g., "zone_admin,district_admin")
+   * ZoneAccess: comma-separated zone IDs (e.g., "Z001,Z002")
    */
   async getUserByUsername(username) {
     try {
@@ -227,18 +230,33 @@ class GoogleSheetsService {
       
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.sourceSpreadsheetId,
-        range: 'Users!A2:D', // Column A: Username, B: Password, C: Role, D: CreatedDate
+        range: 'Users!A2:E', // Column A: Username, B: Password, C: Roles, D: ZoneAccess, E: CreatedDate
       });
 
       const rows = response.data.values || [];
       
       for (const row of rows) {
         if (row[0] && row[0].trim().toLowerCase() === username.trim().toLowerCase()) {
+          // Parse roles - support both old single role and new comma-separated roles
+          let roles = [];
+          const rolesStr = row[2] || '';
+          if (rolesStr) {
+            roles = rolesStr.split(',').map(r => r.trim()).filter(Boolean);
+          }
+          
+          // Parse zone access
+          let zoneAccess = [];
+          const zoneAccessStr = row[3] || '';
+          if (zoneAccessStr) {
+            zoneAccess = zoneAccessStr.split(',').map(z => z.trim()).filter(Boolean);
+          }
+          
           return {
             username: row[0].trim(),
             password: row[1] || '', // Plain text for now, will be hashed later
-            role: row[2] || 'user',
-            createdDate: row[3] || '',
+            roles: roles, // Array of roles
+            zoneAccess: zoneAccess, // Array of zone IDs
+            createdDate: row[4] || '',
           };
         }
       }

@@ -4,7 +4,7 @@ import MeetingForm from './components/MeetingForm';
 import MeetingReport from './components/MeetingReport';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
-import { logout, getUser } from './services/auth';
+import { logout, getUser, hasRole, hasAnyRole } from './services/auth';
 
 import Dashboard from './components/Dashboard';
 
@@ -108,24 +108,33 @@ const AuthenticatedLayout = ({ children }) => {
     <div>
       <nav style={navStyles.container}>
         <div style={navStyles.tabsRow}>
-          <button
-            onClick={() => handleTabChange('form')}
-            style={navStyles.tab(activeTab === 'form')}
-          >
-            മീറ്റിംഗ് ഫോം
-          </button>
+          {/* Meeting Form - Only for zone_admin */}
+          {hasAnyRole(['zone_admin', 'admin']) && (
+            <button
+              onClick={() => handleTabChange('form')}
+              style={navStyles.tab(activeTab === 'form')}
+            >
+              മീറ്റിംഗ് ഫോം
+            </button>
+          )}
+
+          {/* Report - For all authenticated users */}
           <button
             onClick={() => handleTabChange('report')}
             style={navStyles.tab(activeTab === 'report')}
           >
             റിപ്പോർട്ട്
           </button>
-          <button
-            onClick={() => handleTabChange('dashboard')}
-            style={navStyles.tab(activeTab === 'dashboard')}
-          >
-            ഡാഷ്ബോർഡ്
-          </button>
+
+          {/* Dashboard - Only for district_admin and admin */}
+          {hasAnyRole(['district_admin', 'admin']) && (
+            <button
+              onClick={() => handleTabChange('dashboard')}
+              style={navStyles.tab(activeTab === 'dashboard')}
+            >
+              ഡാഷ്ബോർഡ്
+            </button>
+          )}
         </div>
         <div style={navStyles.userRow}>
           {user && (

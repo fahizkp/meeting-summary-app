@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getZones, getAttendees, getAgendas, saveMeeting, getMeetingReport, updateMeeting } from '../services/api';
+import { getAccessibleZones, hasAnyRole } from '../services/auth';
+import { setZonesCache } from '../services/zoneHelper';
 import ZoneSelector from './ZoneSelector';
 import AttendeeList from './AttendeeList';
 import MeetingMinutes from './MeetingMinutes';
@@ -76,7 +78,26 @@ const MeetingForm = () => {
       try {
         const response = await getZones();
         if (response.success) {
-          setZones(response.zones);
+          const allZones = response.zones;
+          const accessibleZoneIds = getAccessibleZones();
+
+          // Filter zones based on user access
+          let filteredZones = allZones;
+          if (accessibleZoneIds !== null) {
+            // User has specific zone access (zone_admin)
+            filteredZones = allZones.filter(zone => accessibleZoneIds.includes(zone.id));
+          }
+          // If accessibleZoneIds is null, user can see all zones (admin/district_admin)
+
+          // Cache all zones for zone helper service
+          setZonesCache(allZones);
+
+          setZones(filteredZones);
+
+          // Show message if user has no zones
+          if (filteredZones.length === 0 && hasAnyRole(['zone_admin'])) {
+            setError('നിങ്ങൾക്ക് ഒരു മണ്ഡലത്തിലേക്കും പ്രവേശനമില്ല. അഡ്മിനുമായി ബന്ധപ്പെടുക.');
+          }
         } else {
           setError('മണ്ഡലങ്ങൾ ലഭിക്കുന്നതിൽ പിശക്');
         }
