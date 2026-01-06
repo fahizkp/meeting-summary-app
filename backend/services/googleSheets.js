@@ -321,9 +321,12 @@ class GoogleSheetsService {
             'Agendas',
             'Attendees',
             'Leave',
-            'AdditionalAttendees',
+            'Additional Attendees',
             'Minutes',
-            'QHLS',
+            'QHLS Data',
+            'Swagatham',
+            'Adhyakshan',
+            'Nandhi',
           ]],
         },
       });
@@ -453,7 +456,7 @@ class GoogleSheetsService {
         try {
           const response = await this.sheets.spreadsheets.values.get({
             spreadsheetId: this.targetSpreadsheetId,
-            range: `${sheetName}!A2:K`, // Skip header row
+            range: `${sheetName}!A2:N`, // Skip header row
           });
 
           const rows = response.data.values || [];
@@ -495,6 +498,9 @@ class GoogleSheetsService {
                 minutes,
                 attendance,
                 qhls,
+                swagatham: row[11] || '',
+                adhyakshan: row[12] || '',
+                nandhi: row[13] || '',
               };
             }
           }
@@ -539,7 +545,7 @@ class GoogleSheetsService {
         try {
           const response = await this.sheets.spreadsheets.values.get({
             spreadsheetId: this.targetSpreadsheetId,
-            range: `${sheetName}!A2:K`, // Skip header row
+            range: `${sheetName}!A2:N`, // Skip header row
           });
 
           const rows = response.data.values || [];
@@ -574,6 +580,9 @@ class GoogleSheetsService {
                 rowIndex: i + 2,
                 attendance, // Add attendance for analytics
                 qhls, // Add QHLS for analytics
+                swagatham: row[11] || '',
+                adhyakshan: row[12] || '',
+                nandhi: row[13] || '',
               });
             }
           }
@@ -627,7 +636,7 @@ class GoogleSheetsService {
         try {
           const response = await this.sheets.spreadsheets.values.get({
             spreadsheetId: this.targetSpreadsheetId,
-            range: `${sheetName}!A2:K`, // Skip header row
+            range: `${sheetName}!A2:N`, // Skip header row
           });
 
           const rows = response.data.values || [];
@@ -672,6 +681,9 @@ class GoogleSheetsService {
                 minutes,
                 sheetName: sheetName,
                 rowIndex: i + 2,
+                swagatham: row[11] || '',
+                adhyakshan: row[12] || '',
+                nandhi: row[13] || '',
               });
             }
           }
@@ -788,7 +800,7 @@ class GoogleSheetsService {
         try {
           const response = await this.sheets.spreadsheets.values.get({
             spreadsheetId: this.targetSpreadsheetId,
-            range: `${sheetName}!A2:K`,
+            range: `${sheetName}!A2:N`,
           });
 
           const rows = response.data.values || [];
@@ -807,6 +819,9 @@ class GoogleSheetsService {
                 minutes = [],
                 attendance = [],
                 qhls = [],
+                swagatham,
+                adhyakshan,
+                nandhi,
               } = meetingData;
 
               // Format agendas as comma-separated text
@@ -852,11 +867,14 @@ class GoogleSheetsService {
                 additionalAttendeesText,
                 minutesText,
                 qhlsJson,
+                swagatham || row[11] || '',
+                adhyakshan || row[12] || '',
+                nandhi || row[13] || '',
               ]];
 
               await this.sheets.spreadsheets.values.update({
                 spreadsheetId: this.targetSpreadsheetId,
-                range: `${sheetName}!A${rowIndex}:K${rowIndex}`,
+                range: `${sheetName}!A${rowIndex}:N${rowIndex}`,
                 valueInputOption: 'RAW',
                 resource: {
                   values,
@@ -902,13 +920,20 @@ class GoogleSheetsService {
     // Format QHLS data
     let qhlsReport = '';
     if (qhls && qhls.length > 0) {
-      // Headings
-      const headings = 'യൂണിറ്റ്, ദിവസം, ഫാക്കൽറ്റി, പുരുഷൻ, സ്ത്രീ';
-      
-      // Data rows
-      const qhlsRows = qhls
-        .filter(row => row.unit || row.day || row.faculty || row.male || row.female)
-        .map(row => {
+      // Filter out rows where both male and female are 0 or empty
+      const validQhlsRows = qhls.filter(row => {
+        const male = parseInt(row.male, 10) || 0;
+        const female = parseInt(row.female, 10) || 0;
+        return (male > 0 || female > 0);
+      });
+
+      // Only generate report if there are valid rows with non-zero attendance
+      if (validQhlsRows.length > 0) {
+        // Headings
+        const headings = 'യൂണിറ്റ്, ദിവസം, ഫാക്കൽറ്റി, പുരുഷൻ, സ്ത്രീ';
+        
+        // Data rows
+        const qhlsRowsFormatted = validQhlsRows.map(row => {
           const unit = row.unit || '';
           const day = row.day || '';
           const faculty = row.faculty || '';
@@ -917,7 +942,8 @@ class GoogleSheetsService {
           return `${unit}, ${day}, ${faculty}, ${male}, ${female}`;
         });
 
-      qhlsReport = `${headings}\n${qhlsRows.join('\n')}`;
+        qhlsReport = `${headings}\n${qhlsRowsFormatted.join('\n')}`;
+      }
     }
 
     // Format agendas with serial numbers
@@ -960,6 +986,9 @@ class GoogleSheetsService {
         minutes,
         attendance,
         qhls,
+        swagatham,
+        adhyakshan,
+        nandhi,
       } = meetingData;
 
       // Calculate week sheet name from date
@@ -1014,12 +1043,15 @@ class GoogleSheetsService {
         additionalAttendeesText,
         minutesText,
         qhlsJson,
+        swagatham || '',
+        adhyakshan || '',
+        nandhi || '',
       ]];
 
       // Append to the week-specific sheet in TARGET spreadsheet
       const response = await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.targetSpreadsheetId,
-        range: `${weekSheetName}!A:K`,
+        range: `${weekSheetName}!A:N`,
         valueInputOption: 'RAW',
         insertDataOption: 'INSERT_ROWS',
         resource: {

@@ -1,0 +1,542 @@
+import React, { useState, useEffect } from 'react';
+import { getUser, getToken } from '../services/auth';
+import { getZones } from '../services/api';
+import * as userApi from '../services/userApi';
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+const UserManagement = () => {
+    const [users, setUsers] = useState([]);
+    const [zones, setZones] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [editingUser, setEditingUser] = useState(null);
+    const [zoneSearch, setZoneSearch] = useState('');
+    const [isZoneDropdownOpen, setIsZoneDropdownOpen] = useState(false);
+    const [fetchError, setFetchError] = useState(null);
+    const formRef = React.useRef(null);
+
+    const [formData, setFormData] = useState({
+        username: '',
+        password: '',
+        roles: [],
+        zoneAccess: [],
+    });
+
+    // Helper to get axios config with auth headers
+    const getAuthConfig = () => ({
+        headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    useEffect(() => {
+        fetchUsers();
+        fetchZones();
+    }, []);
+
+    const fetchUsers = async () => {
+        try {
+            const response = await userApi.getAllUsers();
+            if (response.success) {
+                setUsers(response.users);
+            } else {
+                console.error('Failed to fetch users:', response.message);
+            }
+        } catch (error) {
+            console.error('Error fetching users:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchZones = async () => {
+        try {
+            const response = await getZones();
+            if (response.success) {
+                setZones(response.zones);
+                console.log('Zones loaded:', response.zones.length);
+                if (response.zones.length === 0) {
+                    console.warn('No zones returned from API');
+                }
+            } else {
+                console.error('Zone fetch failed:', response);
+                setFetchError(response.message || 'Failed to load zones');
+            }
+        } catch (error) {
+            console.error('Error fetching zones:', error);
+            setFetchError(error.message || 'Error loading zones');
+        }
+    };
+
+    const handleRoleToggle = (role) => {
+        setFormData(prev => ({
+            ...prev,
+            roles: prev.roles.includes(role)
+                ? prev.roles.filter(r => r !== role)
+                : [...prev.roles, role]
+        }));
+    };
+
+    const handleZoneToggle = (zoneId) => {
+        setFormData(prev => ({
+            ...prev,
+            zoneAccess: prev.zoneAccess.includes(zoneId)
+                ? prev.zoneAccess.filter(z => z !== zoneId)
+                : [...prev.zoneAccess, zoneId]
+        }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            const response = editingUser ? await userApi.updateUser(editingUser.username, formData) : await userApi.createUser(formData);
+
+            if (response.success) {
+                alert(editingUser ? 'User updated successfully!' : 'User created successfully!');
+                handleCancel();
+                fetchUsers();
+            } else {
+                alert('Error: ' + response.message);
+            }
+        } catch (error) {
+            console.error('Error saving user:', error);
+            alert('An error occurred: ' + (error.response?.data?.message || error.message));
+        }
+    };
+
+    const handleEdit = (user) => {
+        setEditingUser(user);
+        setFormData({
+            username: user.username,
+            password: '',
+            roles: user.roles || [],
+            zoneAccess: user.zoneAccess || [],
+        });
+        setShowAddForm(true);
+        // Reset Dropdown state
+        setZoneSearch('');
+        setIsZoneDropdownOpen(false);
+
+        // Scroll to form after a short delay to ensure it's rendered
+        setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    };
+
+    const handleCancel = () => {
+        setShowAddForm(false);
+        setEditingUser(null);
+        setFormData({
+            username: '',
+            password: '',
+            roles: [],
+            zoneAccess: [],
+        });
+        setZoneSearch('');
+        setIsZoneDropdownOpen(false);
+    };
+
+    const handleDelete = async (username) => {
+        if (!confirm(`Are you sure you want to delete ${username}?`)) {
+            return;
+        }
+
+        try {
+            const response = await userApi.deleteUser(username);
+
+            if (response.success) {
+                alert('User deleted successfully!');
+                fetchUsers();
+            } else {
+                alert('Error: ' + response.message);
+            }
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            alert('An error occurred: ' + (error.response?.data?.message || error.message));
+        }
+    };
+
+    if (loading) {
+        return <div className="container">Loading...</div>;
+    }
+
+    return (
+        <div className="container">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h1>User Management</h1>
+                {!showAddForm && (
+                    <button
+                        onClick={() => setShowAddForm(true)}
+                        style={{
+                            padding: '10px 20px',
+                            backgroundColor: 'var(--primary-blue)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontFamily: 'Anek Malayalam',
+                            fontSize: '16px',
+                        }}
+                    >
+                        + New User
+                    </button>
+                )}
+            </div>
+
+            {showAddForm && (
+                <div ref={formRef} style={{
+                    backgroundColor: 'white',
+                    padding: '24px',
+                    borderRadius: '12px',
+                    marginBottom: '24px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                }}>
+                    <h2>{editingUser ? 'Edit User' : 'Add New User'}</h2>
+
+                    <form onSubmit={handleSubmit}>
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                                Username
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.username}
+                                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                                disabled={!!editingUser}
+                                required
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #ddd',
+                                    fontSize: '16px',
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                                Password {editingUser && '(Leave blank to keep current)'}
+                            </label>
+                            <input
+                                type="password"
+                                value={formData.password}
+                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                required={!editingUser}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #ddd',
+                                    fontSize: '16px',
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                                Roles
+                            </label>
+                            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                                {['admin', 'district_admin', 'zone_admin'].map(role => (
+                                    <label key={role} style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        padding: '8px 16px',
+                                        backgroundColor: formData.roles.includes(role) ? '#e6f0ff' : '#f5f5f5',
+                                        color: '#333',
+                                        border: formData.roles.includes(role) ? '1px solid var(--primary-blue)' : '1px solid transparent',
+                                        borderRadius: '20px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                    }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.roles.includes(role)}
+                                            onChange={() => handleRoleToggle(role)}
+                                            style={{ cursor: 'pointer' }}
+                                        />
+                                        {role === 'admin' && 'Admin'}
+                                        {role === 'district_admin' && 'District Admin'}
+                                        {role === 'zone_admin' && 'Zone Admin'}
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        {formData.roles.includes('zone_admin') && (
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                                    Zone Access
+                                </label>
+
+                                <div style={{ position: 'relative' }}>
+                                    {/* Dropdown Header */}
+                                    <div
+                                        onClick={() => setIsZoneDropdownOpen(!isZoneDropdownOpen)}
+                                        style={{
+                                            padding: '10px',
+                                            borderRadius: '8px',
+                                            border: '1px solid #ddd',
+                                            backgroundColor: 'white',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <span style={{
+                                            color: formData.zoneAccess.length > 0 ? '#333' : '#999',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            maxWidth: '90%'
+                                        }}>
+                                            {formData.zoneAccess.length === 0
+                                                ? 'Select Zones...'
+                                                : zones
+                                                    .filter(z => formData.zoneAccess.includes(z.id))
+                                                    .map(z => z.name)
+                                                    .join(', ')}
+                                        </span>
+                                        <span>{isZoneDropdownOpen ? '▲' : '▼'}</span>
+                                    </div>
+
+                                    {/* Dropdown Content */}
+                                    {isZoneDropdownOpen && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '100%',
+                                            left: 0,
+                                            right: 0,
+                                            zIndex: 9999,
+                                            backgroundColor: 'white',
+                                            border: '1px solid #ddd',
+                                            borderRadius: '8px',
+                                            marginTop: '4px',
+                                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                            padding: '12px'
+                                        }}>
+                                            {fetchError && (
+                                                <div style={{ color: 'red', marginBottom: '8px', fontSize: '14px' }}>
+                                                    {fetchError}. Refresh page?
+                                                </div>
+                                            )}
+                                            <div style={{ marginBottom: '8px', display: 'flex', gap: '8px' }}>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Search..."
+                                                    value={zoneSearch}
+                                                    onChange={(e) => setZoneSearch(e.target.value)}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    style={{
+                                                        flex: 1,
+                                                        padding: '8px',
+                                                        borderRadius: '6px',
+                                                        border: '1px solid #ddd',
+                                                    }}
+                                                />
+                                            </div>
+
+                                            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const allZoneIds = zones.map(z => z.id);
+                                                        setFormData(prev => ({ ...prev, zoneAccess: allZoneIds }));
+                                                    }}
+                                                    style={{
+                                                        flex: 1,
+                                                        padding: '6px',
+                                                        backgroundColor: '#e6f0ff',
+                                                        border: '1px solid var(--primary-blue)',
+                                                        color: 'var(--primary-blue)',
+                                                        borderRadius: '6px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '12px',
+                                                    }}
+                                                >
+                                                    Select All
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setFormData(prev => ({ ...prev, zoneAccess: [] }));
+                                                    }}
+                                                    style={{
+                                                        flex: 1,
+                                                        padding: '6px',
+                                                        backgroundColor: '#fff0f0',
+                                                        border: '1px solid #dc3545',
+                                                        color: '#dc3545',
+                                                        borderRadius: '6px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '12px',
+                                                    }}
+                                                >
+                                                    Deselect All
+                                                </button>
+                                            </div>
+
+                                            <div style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '4px',
+                                                maxHeight: '200px',
+                                                overflowY: 'auto',
+                                            }}>
+                                                {zones
+                                                    .filter(zone => zone.name.toLowerCase().includes(zoneSearch.toLowerCase()))
+                                                    .map(zone => (
+                                                        <label key={zone.id} style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '8px',
+                                                            padding: '8px',
+                                                            borderRadius: '6px',
+                                                            cursor: 'pointer',
+                                                            fontSize: '14px',
+                                                            backgroundColor: formData.zoneAccess.includes(zone.id) ? '#f0f7ff' : 'transparent',
+                                                        }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={formData.zoneAccess.includes(zone.id)}
+                                                                onChange={() => handleZoneToggle(zone.id)}
+                                                                style={{ cursor: 'pointer' }}
+                                                            />
+                                                            {zone.name}
+                                                        </label>
+                                                    ))}
+                                                {zones.filter(zone => zone.name.toLowerCase().includes(zoneSearch.toLowerCase())).length === 0 && (
+                                                    <div style={{ color: '#999', fontStyle: 'italic', padding: '8px', textAlign: 'center' }}>
+                                                        No zones match "{zoneSearch}"
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                            <button
+                                type="submit"
+                                style={{
+                                    padding: '10px 24px',
+                                    backgroundColor: 'var(--primary-green)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontFamily: 'Anek Malayalam',
+                                    fontSize: '16px',
+                                    fontWeight: '600',
+                                }}
+                            >
+                                {editingUser ? 'Update' : 'Save'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleCancel}
+                                style={{
+                                    padding: '10px 24px',
+                                    backgroundColor: '#6c757d',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontFamily: 'Anek Malayalam',
+                                    fontSize: '16px',
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+
+            <div style={{
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr style={{ backgroundColor: 'var(--primary-blue)', color: 'white' }}>
+                            <th style={{ padding: '12px', textAlign: 'left' }}>Username</th>
+                            <th style={{ padding: '12px', textAlign: 'left' }}>Roles</th>
+                            <th style={{ padding: '12px', textAlign: 'left' }}>Zone Access</th>
+                            <th style={{ padding: '12px', textAlign: 'center' }}>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {users.length === 0 ? (
+                            <tr>
+                                <td colSpan="4" style={{ padding: '24px', textAlign: 'center', color: '#999' }}>
+                                    No users found. Add new user from above.
+                                </td>
+                            </tr>
+                        ) : (
+                            users.map((user, index) => (
+                                <tr key={user.username} style={{
+                                    backgroundColor: index % 2 === 0 ? 'white' : '#f9f9f9',
+                                    borderBottom: '1px solid #eee',
+                                }}>
+                                    <td style={{ padding: '12px' }}>{user.username}</td>
+                                    <td style={{ padding: '12px' }}>
+                                        {user.roles?.join(', ') || '-'}
+                                    </td>
+                                    <td style={{ padding: '12px' }}>
+                                        {user.zoneAccess?.length > 0 ? `${user.zoneAccess.length} zones` : '-'}
+                                    </td>
+                                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                                        <button
+                                            onClick={() => handleEdit(user)}
+                                            style={{
+                                                padding: '6px 16px',
+                                                backgroundColor: 'var(--primary-green)',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '6px',
+                                                cursor: 'pointer',
+                                                fontSize: '14px',
+                                                marginRight: '8px',
+                                            }}
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(user.username)}
+                                            style={{
+                                                padding: '6px 16px',
+                                                backgroundColor: '#dc3545',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '6px',
+                                                cursor: 'pointer',
+                                                fontSize: '14px',
+                                            }}
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
+export default UserManagement;
+

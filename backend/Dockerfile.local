@@ -1,0 +1,20 @@
+# Local Development Dockerfile for Backend
+# Supports hot-reloading with nodemon
+
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install nodemon globally for hot-reloading
+RUN npm install -g nodemon
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3001
+
+# Use nodemon for development with hot-reloading
+CMD ["nodemon", "--legacy-watch", "server.js"]

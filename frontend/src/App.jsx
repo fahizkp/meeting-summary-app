@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { logout, getUser, hasRole, hasAnyRole } from './services/auth';
 
 import Dashboard from './components/Dashboard';
+import UserManagement from './components/UserManagement';
 
 // Layout component for authenticated pages
 const AuthenticatedLayout = ({ children }) => {
@@ -16,15 +17,29 @@ const AuthenticatedLayout = ({ children }) => {
   const user = getUser();
 
   useEffect(() => {
-    // Update active tab when route changes
+    // Update active tab when  useEffect(() => {
     if (location.pathname === '/report') {
       setActiveTab('report');
     } else if (location.pathname === '/dashboard') {
       setActiveTab('dashboard');
+    } else if (location.pathname === '/admin') {
+      setActiveTab('admin');
     } else {
-      setActiveTab('form');
+      // Default tab logic based on user role
+      const user = getUser();
+      if (user && user.roles) {
+        // If user is ONLY district_admin (no zone_admin or admin), redirect to dashboard
+        if (hasRole('district_admin') && !hasRole('zone_admin') && !hasRole('admin')) {
+          setActiveTab('dashboard');
+          navigate('/dashboard');
+        } else {
+          setActiveTab('form');
+        }
+      } else {
+        setActiveTab('form');
+      }
     }
-  }, [location.pathname]);
+  }, [location.pathname, navigate]);
 
   const handleLogout = () => {
     logout();
@@ -37,6 +52,8 @@ const AuthenticatedLayout = ({ children }) => {
       navigate('/report');
     } else if (tab === 'dashboard') {
       navigate('/dashboard');
+    } else if (tab === 'admin') {
+      navigate('/admin');
     } else {
       navigate('/');
     }
@@ -135,6 +152,16 @@ const AuthenticatedLayout = ({ children }) => {
               ഡാഷ്ബോർഡ്
             </button>
           )}
+
+          {/* Admin - Only for admin */}
+          {hasRole('admin') && (
+            <button
+              onClick={() => handleTabChange('admin')}
+              style={navStyles.tab(activeTab === 'admin')}
+            >
+              അഡ്മിൻ
+            </button>
+          )}
         </div>
         <div style={navStyles.userRow}>
           {user && (
@@ -192,6 +219,16 @@ function App() {
                 // Actually MeetingReport listens to state or just shows list.
                 // We can make Dashboard pass state to navigate.
               }} />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedLayout>
+              <UserManagement />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }

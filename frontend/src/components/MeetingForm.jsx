@@ -39,6 +39,9 @@ const MeetingForm = () => {
   const [selectedAgendas, setSelectedAgendas] = useState([]);
   const [minutes, setMinutes] = useState(['']);
   const [attendance, setAttendance] = useState({});
+  const [swagatham, setSwagatham] = useState(''); // Welcome
+  const [adhyakshan, setAdhyakshan] = useState(''); // Chairperson
+  const [nandhi, setNandhi] = useState(''); // Vote of Thanks
   const [qhlsData, setQhlsData] = useState(buildQhlsRows());
   const [zoneUnits, setZoneUnits] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -93,6 +96,42 @@ const MeetingForm = () => {
           setZonesCache(allZones);
 
           setZones(filteredZones);
+
+          // Auto-select zone if user has access to only one zone
+          if (filteredZones.length === 1 && !selectedZone) {
+            const autoSelectedZone = filteredZones[0];
+            console.log('Auto-selecting zone:', autoSelectedZone);
+            setSelectedZone(autoSelectedZone.id);
+            setSelectedZoneName(autoSelectedZone.name);
+            setZoneUnits(autoSelectedZone.units || []);
+
+            // Explicitly load attendees for auto-selected zone
+            const loadAttendees = async () => {
+              try {
+                console.log('Loading attendees for zone:', autoSelectedZone.id);
+                const response = await getAttendees(autoSelectedZone.id);
+                console.log('Attendees response:', response);
+                if (response.success) {
+                  setAttendees(response.attendees);
+                  const initialAttendance = {};
+                  response.attendees.forEach((attendee) => {
+                    const attendeeKey = `${attendee.name}_${attendee.role || ''}`;
+                    initialAttendance[attendeeKey] = {
+                      status: 'present',
+                      reason: '',
+                    };
+                  });
+                  setAttendance(initialAttendance);
+                  console.log('Attendees loaded:', response.attendees.length, 'attendees');
+                } else {
+                  console.error('Failed to load attendees:', response.message);
+                }
+              } catch (err) {
+                console.error('Error loading attendees for auto-selected zone:', err);
+              }
+            };
+            loadAttendees();
+          }
 
           // Show message if user has no zones
           if (filteredZones.length === 0 && hasAnyRole(['zone_admin'])) {
@@ -179,6 +218,9 @@ const MeetingForm = () => {
         attendance: draftAttendance,
         qhlsData: draftQhls,
         selectedAgendas: draftAgendas,
+        swagatham: draftSwagatham,
+        adhyakshan: draftAdhyakshan,
+        nandhi: draftNandhi,
       } = parsedDraft;
 
       if (draftZone) {
@@ -188,6 +230,9 @@ const MeetingForm = () => {
       if (draftDate) setDate(draftDate);
       if (typeof draftStart === 'string') setStartTime(draftStart);
       if (typeof draftEnd === 'string') setEndTime(draftEnd);
+      if (typeof draftSwagatham === 'string') setSwagatham(draftSwagatham);
+      if (typeof draftAdhyakshan === 'string') setAdhyakshan(draftAdhyakshan);
+      if (typeof draftNandhi === 'string') setNandhi(draftNandhi);
       if (Array.isArray(draftMinutes) && draftMinutes.length) {
         setMinutes(draftMinutes);
       }
@@ -380,6 +425,9 @@ const MeetingForm = () => {
   const handleZoneChange = (zoneId) => {
     setSelectedZone(zoneId);
     setMinutes(['']); // Reset minutes when zone changes
+    setSwagatham('');
+    setAdhyakshan('');
+    setNandhi('');
     setSuccess(null);
 
     if (!zoneId) {
@@ -492,6 +540,9 @@ const MeetingForm = () => {
       date,
       startTime,
       endTime,
+      swagatham,
+      adhyakshan,
+      nandhi,
       selectedAgendas,
       minutes,
       attendance,
@@ -516,6 +567,18 @@ const MeetingForm = () => {
   ]);
 
   const formatReportForWhatsApp = (report, meetingData) => {
+    // Helper to convert 24h to 12h format
+    const formatTime12h = (time24) => {
+      if (!time24) return '';
+      const [hours, minutes] = time24.split(':');
+      let h = parseInt(hours, 10);
+      const m = parseInt(minutes, 10);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      h = h ? h : 12;
+      return `${h}:${m < 10 ? '0' + m : m} ${ampm}`;
+    };
+
     let qhlsFormatted = report.qhlsStatus || 'QHLS ഡാറ്റയില്ല';
 
     // Format QHLS as a text table if data exists
@@ -554,14 +617,23 @@ const MeetingForm = () => {
       }
     }
 
+    // Only include QHLS if there's valid data
+    const qhlsSection = qhlsFormatted && qhlsFormatted !== 'QHLS ഡാറ്റയില്ല' && qhlsFormatted.trim()
+      ? [`*QHLS Status:*`, qhlsFormatted]
+      : [];
+
     const lines = [
       `*മീറ്റിംഗ് റിപ്പോർട്ട്*`,
       `━━━━━━━━━━━━━━━━━━━━`,
       `*മണ്ഡലം:* ${meetingData.zoneName}`,
       ``,
       `*തീയതി:* ${meetingData.date}`,
-      meetingData.startTime ? `*തുടങ്ങിയ സമയം:* ${meetingData.startTime}` : '',
-      meetingData.endTime ? `*അവസാനിച്ച സമയം:* ${meetingData.endTime}` : '',
+      meetingData.startTime ? `*തുടങ്ങിയ സമയം:* ${formatTime12h(meetingData.startTime)}` : '',
+      meetingData.endTime ? `*അവസാനിച്ച സമയം:* ${formatTime12h(meetingData.endTime)}` : '',
+      ``,
+      meetingData.swagatham ? `*സ്വാഗതം:* ${meetingData.swagatham}` : '',
+      meetingData.adhyakshan ? `*അധ്യക്ഷൻ:* ${meetingData.adhyakshan}` : '',
+      meetingData.nandhi ? `*നന്ദി:* ${meetingData.nandhi}` : '',
       ``,
       `*പങ്കെടുത്തവർ:*`,
       report.attendees || 'ആരുമില്ല',
@@ -574,9 +646,7 @@ const MeetingForm = () => {
       ``,
       `*തീരുമാനങ്ങൾ:*`,
       report.minutes || 'തീരുമാനങ്ങളില്ല',
-      ``,
-      `*QHLS Status:*`,
-      qhlsFormatted,
+      ...qhlsSection,
     ].filter(line => line !== '').join('\n');
 
     return lines;
@@ -863,6 +933,9 @@ const MeetingForm = () => {
         date,
         startTime,
         endTime,
+        swagatham, // Welcome
+        adhyakshan, // Chairperson
+        nandhi, // Vote of Thanks
         agendas: selectedAgendas,
         minutes: validMinutes,
         attendance: Object.entries(attendance).map(([key, data]) => {
@@ -930,7 +1003,7 @@ const MeetingForm = () => {
 
   return (
     <div className="container">
-      <h1>മീറ്റിംഗ് സംഗ്രഹം (Meeting Summary)</h1>
+      <h1>മീറ്റിംഗ് റിപ്പോർട്ട്</h1>
 
       {error && <div className="error">{error}</div>}
       {success && <div className="success">{success}</div>}
@@ -941,10 +1014,11 @@ const MeetingForm = () => {
           selectedZone={selectedZone}
           onZoneChange={handleZoneChange}
           loading={loading}
+          disabled={zones.length === 1}
         />
 
         <div className="form-group">
-          <label htmlFor="date">തീയതി (Date):</label>
+          <label htmlFor="date">തീയതി:</label>
           <input
             type="date"
             id="date"
@@ -955,7 +1029,7 @@ const MeetingForm = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="startTime">തുടങ്ങിയ സമയം (Start Time):</label>
+          <label htmlFor="startTime">തുടങ്ങിയ സമയം:</label>
           <input
             type="time"
             id="startTime"
@@ -965,7 +1039,7 @@ const MeetingForm = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="endTime">അവസാനിച്ച സമയം (End Time):</label>
+          <label htmlFor="endTime">അവസാനിച്ച സമയം:</label>
           <input
             type="time"
             id="endTime"
@@ -980,6 +1054,8 @@ const MeetingForm = () => {
           onAgendaAdd={handleAgendaAdd}
           onAgendaRemove={handleAgendaRemove}
         />
+
+
 
         {loading && attendees.length === 0 && selectedZone && (
           <div className="loading">ലോഡ് ചെയ്യുന്നു... (Loading...)</div>
@@ -1006,6 +1082,78 @@ const MeetingForm = () => {
           availableUnits={zoneUnits}
         />
 
+        {/* Meeting Roles Section */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', marginBottom: '20px' }}>
+          <div className="form-group">
+            <label htmlFor="swagatham">സ്വാഗതം:</label>
+            <select
+              id="swagatham"
+              value={swagatham}
+              onChange={(e) => setSwagatham(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '8px',
+                border: '2px solid #e0e0e0',
+                fontSize: '1rem',
+              }}
+            >
+              <option value="">-- തിരഞ്ഞെടുക്കുക --</option>
+              {attendees.map((attendee, index) => (
+                <option key={index} value={attendee.name}>
+                  {attendee.name} ({attendee.role})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="adhyakshan">അധ്യക്ഷൻ:</label>
+            <select
+              id="adhyakshan"
+              value={adhyakshan}
+              onChange={(e) => setAdhyakshan(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '8px',
+                border: '2px solid #e0e0e0',
+                fontSize: '1rem',
+              }}
+            >
+              <option value="">-- തിരഞ്ഞെടുക്കുക --</option>
+              {attendees.map((attendee, index) => (
+                <option key={index} value={attendee.name}>
+                  {attendee.name} ({attendee.role})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="nandhi">നന്ദി:</label>
+            <select
+              id="nandhi"
+              value={nandhi}
+              onChange={(e) => setNandhi(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '8px',
+                border: '2px solid #e0e0e0',
+                fontSize: '1rem',
+              }}
+            >
+              <option value="">-- തിരഞ്ഞെടുക്കുക --</option>
+              {attendees.map((attendee, index) => (
+                <option key={index} value={attendee.name}>
+                  {attendee.name} ({attendee.role})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         <div className="submit-section">
           <button
             type="submit"
@@ -1024,20 +1172,20 @@ const MeetingForm = () => {
         <div className="report-preview-modal">
           <div className="report-preview-content">
             <div className="report-preview-header">
-              <h2>റിപ്പോർട്ട് പ്രിവ്യൂ (Report Preview)</h2>
+              <h2>റിപ്പോർട്ട് പ്രിവ്യൂ</h2>
               <button onClick={handleClosePreview} className="close-button">×</button>
             </div>
 
             <div className="report-preview-body">
               <div className="report-section">
-                <h3>മീറ്റിംഗ് വിവരങ്ങൾ (Meeting Details)</h3>
-                <p><strong>മണ്ഡലം (Zone):</strong> {reportData.meetingData.zoneName}</p>
-                <p><strong>തീയതി (Date):</strong> {reportData.meetingData.date}</p>
+                <h3>മീറ്റിംഗ് റിപ്പോർട്ട്</h3>
+                <p><strong>മണ്ഡലം:</strong> {reportData.meetingData.zoneName}</p>
+                <p><strong>തീയതി:</strong> {reportData.meetingData.date}</p>
                 {reportData.meetingData.startTime && (
-                  <p><strong>തുടങ്ങിയ സമയം (Start Time):</strong> {reportData.meetingData.startTime}</p>
+                  <p><strong>തുടങ്ങിയ സമയം:</strong> {reportData.meetingData.startTime}</p>
                 )}
                 {reportData.meetingData.endTime && (
-                  <p><strong>അവസാനിച്ച സമയം (End Time):</strong> {reportData.meetingData.endTime}</p>
+                  <p><strong>അവസാനിച്ച സമയം:</strong> {reportData.meetingData.endTime}</p>
                 )}
               </div>
 
@@ -1069,13 +1217,13 @@ const MeetingForm = () => {
 
             <div className="report-preview-actions">
               <button onClick={handleCopyToWhatsApp} className="btn-secondary">
-                📱 വാട്സാപ്പിലേക്ക് കോപ്പി (Copy to WhatsApp)
+                📱 വാട്സാപ്പിലേക്ക് കോപ്പി ചെയ്യുക
               </button>
               <button onClick={handleSaveAsPDF} className="btn-success">
-                📄 PDF ആയി സേവ് (Save as PDF)
+                📄 PDF ആയി സേവ് ചെയ്യുക
               </button>
               <button onClick={handleClosePreview} className="btn-secondary">
-                അടയ്ക്കുക (Close)
+                Close
               </button>
             </div>
           </div>

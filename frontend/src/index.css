@@ -114,7 +114,7 @@ h1 {
   padding-bottom: var(--space-md);
 }
 
-h1::after {
+/* h1::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -124,7 +124,7 @@ h1::after {
   height: 4px;
   background: var(--primary);
   border-radius: var(--radius-full);
-}
+} */
 
 h3 {
   color: var(--primary);
@@ -136,13 +136,13 @@ h3 {
   gap: var(--space-sm);
 }
 
-h3::before {
+/* h3::before {
   content: '';
   width: 4px;
   height: 20px;
   background: var(--primary);
   border-radius: var(--radius-full);
-}
+} */
 
 @media (max-width: 640px) {
   h1 {

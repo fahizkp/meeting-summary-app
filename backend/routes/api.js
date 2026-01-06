@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { authenticate } = require('../middleware/auth');
+const { isMongoConnected } = require('../config/mongodb');
+const mongoService = require('../services/mongoService');
 
 let googleSheetsService;
 try {
@@ -36,25 +38,44 @@ router.get('/debug/env', (req, res) => {
     spreadsheetIdLength: process.env.GOOGLE_SHEETS_SPREADSHEET_ID?.length || 0,
     clientEmail: process.env.GOOGLE_SHEETS_CLIENT_EMAIL ? 'Set' : 'Not set',
     privateKeyLength: process.env.GOOGLE_SHEETS_PRIVATE_KEY?.length || 0,
+    mongoConnected: isMongoConnected(),
   });
 });
 
 /**
  * GET /api/zones
- * Fetch all available zones
+ * Fetch all available zones (MongoDB first, fallback to Sheets)
  */
 router.get('/zones', async (req, res) => {
-  if (!googleSheetsService) {
-    return res.status(500).json({
-      success: false,
-      error: 'Google Sheets service not initialized',
-      message: 'Please check your .env file and ensure all required environment variables are set',
-    });
-  }
-  
   try {
-    const zones = await googleSheetsService.getZones();
-    res.json({ success: true, zones });
+    let zones;
+
+    // Try MongoDB first
+    if (isMongoConnected()) {
+      console.log('[API] Fetching zones from MongoDB');
+      zones = await mongoService.getZones();
+      
+      // Add units from MongoDB
+      for (const zone of zones) {
+        const units = await mongoService.getUnitsByZone(zone.id);
+        zone.units = units;
+      }
+      
+      return res.json({ success: true, zones, source: 'mongodb' });
+    }
+
+    // Fallback to Google Sheets
+    if (!googleSheetsService) {
+      return res.status(500).json({
+        success: false,
+        error: 'No data source available',
+        message: 'Neither MongoDB nor Google Sheets is available',
+      });
+    }
+
+    console.log('[API] Fetching zones from Google Sheets');
+    zones = await googleSheetsService.getZones();
+    res.json({ success: true, zones, source: 'sheets' });
   } catch (error) {
     console.error('Error in /api/zones:', error);
     console.error('Error stack:', error.stack);
@@ -67,23 +88,35 @@ router.get('/zones', async (req, res) => {
   }
 });
 
+
 /**
  * GET /api/attendees/:zoneId
- * Fetch attendees for a specific zone
+ * Fetch attendees for a specific zone (MongoDB first, fallback to Sheets)
  */
 router.get('/attendees/:zoneId', async (req, res) => {
-  if (!googleSheetsService) {
-    return res.status(500).json({
-      success: false,
-      error: 'Google Sheets service not initialized',
-      message: 'Please check your .env file and ensure all required environment variables are set',
-    });
-  }
-  
   try {
     const { zoneId } = req.params;
-    const attendees = await googleSheetsService.getAttendeesByZone(zoneId);
-    res.json({ success: true, attendees });
+    let attendees;
+
+    // Try MongoDB first
+    if (isMongoConnected()) {
+      console.log('[API] Fetching attendees from MongoDB');
+      attendees = await mongoService.getAttendeesByZone(zoneId);
+      return res.json({ success: true, attendees, source: 'mongodb' });
+    }
+
+    // Fallback to Google Sheets
+    if (!googleSheetsService) {
+      return res.status(500).json({
+        success: false,
+        error: 'No data source available',
+        message: 'Neither MongoDB nor Google Sheets is available',
+      });
+    }
+
+    console.log('[API] Fetching attendees from Google Sheets');
+    attendees = await googleSheetsService.getAttendeesByZone(zoneId);
+    res.json({ success: true, attendees, source: 'sheets' });
   } catch (error) {
     console.error('Error in /api/attendees:', error);
     res.status(500).json({

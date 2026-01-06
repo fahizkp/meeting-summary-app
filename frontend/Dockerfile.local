@@ -1,0 +1,17 @@
+# Local Development Dockerfile for Frontend
+# Supports hot-reloading with Vite dev server
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 5173
+
+# Use Vite dev server with host flag for Docker networking
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

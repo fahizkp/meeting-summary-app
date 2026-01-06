@@ -26,6 +26,10 @@ NODE_ENV=development
 
 # JWT Secret for authentication
 JWT_SECRET=your_jwt_secret_key_here
+
+# MongoDB Configuration (optional - falls back to Google Sheets if not set)
+# Format: mongodb://username:password@host:port/database?authSource=admin
+MONGODB_URI=mongodb://user:password@137.59.86.122:27017/meeting_app?authSource=admin
 ```
 
 ## Spreadsheet Structure

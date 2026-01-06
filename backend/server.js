@@ -25,6 +25,10 @@ const cors = require('cors');
 const apiRoutes = require('./routes/api');
 const authRoutes = require('./routes/auth');
 
+// MongoDB connection and sync
+const { connectDB, isMongoConnected } = require('./config/mongodb');
+const { startSyncScheduler, getSyncStatus } = require('./jobs/syncToSheets');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -66,11 +70,20 @@ app.use(express.urlencoded({ extended: true }));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Meeting Summary API is running' });
+  res.json({ 
+    status: 'ok', 
+    message: 'Meeting Summary API is running',
+    mongodb: isMongoConnected() ? 'connected' : 'disconnected',
+    sync: getSyncStatus(),
+  });
 });
 
 // Auth routes (public, no authentication required)
 app.use('/api/auth', authRoutes);
+
+// User management routes (protected, admin only)
+const usersRoutes = require('./routes/users');
+app.use('/api/users', usersRoutes);
 
 // API routes (protected, require authentication)
 app.use('/api', apiRoutes);
@@ -85,12 +98,35 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/health`);
-  console.log(`Debug endpoint: http://localhost:${PORT}/api/debug/env`);
-  console.log(`Source Spreadsheet (read): ${hasSourceId ? 'Set' : (hasLegacyId ? 'Using legacy ID' : 'NOT SET')}`);
-  console.log(`Target Spreadsheet (write): ${hasTargetId ? 'Set' : (hasLegacyId ? 'Using legacy ID' : 'NOT SET')}`);
-});
+// Initialize MongoDB and start server
+async function startServer() {
+  // Try to connect to MongoDB (non-blocking, with fallback to Google Sheets)
+  if (process.env.MONGODB_URI) {
+    console.log('Connecting to MongoDB...');
+    await connectDB();
+    
+    // Start background sync scheduler if MongoDB is connected
+    if (isMongoConnected()) {
+      console.log('Starting background sync scheduler...');
+      startSyncScheduler();
+    }
+  } else {
+    console.log('MONGODB_URI not set - using Google Sheets only');
+  }
 
+  // Start Express server
+  app.listen(PORT, () => {
+    console.log(`\n===========================================`);
+    console.log(`  Meeting Summary API`);
+    console.log(`===========================================`);
+    console.log(`Server is running on port ${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/health`);
+    console.log(`Debug endpoint: http://localhost:${PORT}/api/debug/env`);
+    console.log(`Source Spreadsheet (read): ${hasSourceId ? 'Set' : (hasLegacyId ? 'Using legacy ID' : 'NOT SET')}`);
+    console.log(`Target Spreadsheet (write): ${hasTargetId ? 'Set' : (hasLegacyId ? 'Using legacy ID' : 'NOT SET')}`);
+    console.log(`MongoDB: ${isMongoConnected() ? 'Connected ✓' : 'Not connected (using Sheets fallback)'}`);
+    console.log(`===========================================\n`);
+  });
+}
+
+startServer();

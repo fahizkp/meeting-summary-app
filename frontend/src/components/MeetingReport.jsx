@@ -122,6 +122,17 @@ const MeetingReport = () => {
     }
   };
 
+  const formatTime12h = (time24) => {
+    if (!time24) return '';
+    const [hours, minutes] = time24.split(':');
+    let h = parseInt(hours, 10);
+    const m = parseInt(minutes, 10);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    h = h ? h : 12;
+    return `${h}:${m < 10 ? '0' + m : m} ${ampm}`;
+  };
+
   const handleCopyReport = () => {
     if (!selectedReport || !selectedMeetingData) return;
 
@@ -157,14 +168,41 @@ const MeetingReport = () => {
       }
     }
 
+    const getFirstName = (fullName) => {
+      if (!fullName) return '';
+      return fullName.split(' ')[0];
+    };
+
+    const adhyakshanLine = selectedMeetingData.adhyakshan
+      ? `മീറ്റിംഗിൽ ${getFirstName(selectedMeetingData.adhyakshan)} അധ്യക്ഷനായിരുന്നു`
+      : '';
+
+    let welcomeVoteLine = '';
+    const sName = getFirstName(selectedMeetingData.swagatham);
+    const nName = getFirstName(selectedMeetingData.nandhi);
+
+    if (sName && nName) {
+      welcomeVoteLine = `${sName} സ്വാഗതവും ${nName} നന്ദിയും പറഞ്ഞു.`;
+    } else if (sName) {
+      welcomeVoteLine = `${sName} സ്വാഗതം പറഞ്ഞു.`;
+    } else if (nName) {
+      welcomeVoteLine = `${nName} നന്ദി പറഞ്ഞു.`;
+    }
+
+    // Only include QHLS section if there's valid data
+    const qhlsSection = qhlsFormatted && qhlsFormatted !== 'QHLS ഡാറ്റയില്ല' && qhlsFormatted.trim()
+      ? `\nQHLS Status:\n${qhlsFormatted}`
+      : '';
+
     const reportText = `മീറ്റിംഗ് റിപ്പോർട്ട്
 ━━━━━━━━━━━━━━━━━━━━
 മണ്ഡലം: ${selectedMeetingData.zoneName}
 
 തീയതി: ${selectedMeetingData.date}
-${selectedMeetingData.startTime ? `തുടങ്ങിയ സമയം: ${selectedMeetingData.startTime}` : ''}
-${selectedMeetingData.endTime ? `അവസാനിച്ച സമയം: ${selectedMeetingData.endTime}` : ''}
+${selectedMeetingData.startTime ? `തുടങ്ങിയ സമയം: ${formatTime12h(selectedMeetingData.startTime)}` : ''}
+${selectedMeetingData.endTime ? `അവസാനിച്ച സമയം: ${formatTime12h(selectedMeetingData.endTime)}` : ''}
 
+${adhyakshanLine ? adhyakshanLine + '\n' : ''}${welcomeVoteLine ? welcomeVoteLine + '\n' : ''}
 പങ്കെടുത്തവർ:
 ${selectedReport.attendees || 'ആരുമില്ല'}
 
@@ -175,10 +213,7 @@ ${selectedReport.leaveAayavar || 'ആരുമില്ല'}
 ${selectedReport.agenda || 'അജണ്ടകളില്ല'}
 
 തീരുമാനങ്ങൾ:
-${selectedReport.minutes || 'തീരുമാനങ്ങളില്ല'}
-
-QHLS Status:
-${qhlsFormatted}`;
+${selectedReport.minutes || 'തീരുമാനങ്ങളില്ല'}${qhlsSection}`;
 
     navigator.clipboard.writeText(reportText).then(() => {
       alert('റിപ്പോർട്ട് കോപ്പി ചെയ്തു! (Report copied!)');
@@ -351,10 +386,10 @@ ${qhlsFormatted}`;
               <p><strong>മണ്ഡലം (Zone):</strong> {selectedMeetingData.zoneName}</p>
               <p><strong>തീയതി (Date):</strong> {selectedMeetingData.date}</p>
               {selectedMeetingData.startTime && (
-                <p><strong>തുടങ്ങിയ സമയം (Start Time):</strong> {selectedMeetingData.startTime}</p>
+                <p><strong>തുടങ്ങിയ സമയം (Start Time):</strong> {formatTime12h(selectedMeetingData.startTime)}</p>
               )}
               {selectedMeetingData.endTime && (
-                <p><strong>അവസാനിച്ച സമയം (End Time):</strong> {selectedMeetingData.endTime}</p>
+                <p><strong>അവസാനിച്ച സമയം (End Time):</strong> {formatTime12h(selectedMeetingData.endTime)}</p>
               )}
             </div>
 
@@ -378,10 +413,12 @@ ${qhlsFormatted}`;
               <pre className="report-content">{selectedReport.minutes || 'തീരുമാനങ്ങളില്ല'}</pre>
             </div>
 
-            <div className="report-section">
-              <h2>QHLS Status:</h2>
-              <pre className="report-content">{selectedReport.qhlsStatus || 'QHLS ഡാറ്റയില്ല'}</pre>
-            </div>
+            {selectedReport.qhlsStatus && selectedReport.qhlsStatus.trim() && (
+              <div className="report-section">
+                <h2>QHLS Status:</h2>
+                <pre className="report-content">{selectedReport.qhlsStatus}</pre>
+              </div>
+            )}
           </div>
         </div>
       )}
