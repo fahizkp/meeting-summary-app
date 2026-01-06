@@ -1,6 +1,6 @@
 services:
   backend:
-    image: ghcr.io/fahizkp/meeting-summary-backend:latest
+    image: ghcr.io/wisdom-youth-mlpe/meeting-summary-backend:latest
     container_name: meeting-summary-backend
     restart: unless-stopped
     env_file:
@@ -21,7 +21,7 @@ services:
       - "traefik.http.services.meeting-summary-backend.loadbalancer.server.port=3001"
 
   frontend:
-    image: ghcr.io/fahizkp/meeting-summary-frontend:latest
+    image: ghcr.io/wisdom-youth-mlpe/meeting-summary-frontend:latest
     container_name: meeting-summary-frontend
     restart: unless-stopped
     depends_on:

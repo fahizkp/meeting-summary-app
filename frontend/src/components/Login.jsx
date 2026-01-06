@@ -30,7 +30,7 @@ const Login = () => {
 
     try {
       const result = await login(username.trim(), password);
-      
+
       if (result.success) {
         // Redirect to home page
         navigate('/');
@@ -52,7 +52,7 @@ const Login = () => {
         borderRadius: '8px',
         boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
       }}>
-        <h1 style={{ textAlign: 'center', marginBottom: '30px', color: '#2c3e50' }}>
+        <h1 style={{ textAlign: 'center', marginBottom: '30px', color: 'var(--primary)' }}>
           Login
         </h1>
 
@@ -95,7 +95,7 @@ const Login = () => {
           <div className="submit-section">
             <button
               type="submit"
-              className="submit-button btn-success"
+              className="submit-button"
               disabled={loading}
               style={{ width: '100%', padding: '12px', fontSize: '16px' }}
             >
