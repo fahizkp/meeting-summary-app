@@ -43,4 +43,5 @@ networks:
   web:
     external: true
   infra:
+    external: true
   meeting-summary-internal:
