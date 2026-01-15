@@ -85,6 +85,10 @@ async function startServer() {
     process.exit(1);
   }
 
+  // Debug: Log MongoDB URI (mask password for security)
+  const maskedUri = process.env.MONGODB_URI.replace(/:([^:@]+)@/, ':****@');
+  console.log('DEBUG: MongoDB URI:', maskedUri);
+
   // Connect to MongoDB (required)
   console.log('Connecting to MongoDB...');
   await connectDB();
