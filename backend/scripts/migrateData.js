@@ -13,6 +13,7 @@ const Unit = require('../models/Unit');
 const User = require('../models/User');
 const Committee = require('../models/Committee');
 const CommitteeRole = require('../models/CommitteeRole');
+const Agenda = require('../models/Agenda');
 
 const COMMITTEE_ROLES_DATA = [
   { id: 'CR01', name: 'പ്രസിഡന്റ്', englishName: 'President' },
@@ -287,6 +288,69 @@ async function createDefaultDistrict() {
   }
 }
 
+// Default agendas to seed
+const DEFAULT_AGENDAS = [
+  'ഹാജർ',
+  'മുൻ മീറ്റിംഗ് റിപ്പോർട്ട്',
+  'സാമ്പത്തിക റിപ്പോർട്ട്',
+  'QHLS റിപ്പോർട്ട്',
+  'പരിപാടികൾ',
+  'അംഗത്വം',
+  'മറ്റുള്ളവ',
+];
+
+async function migrateAgendas() {
+  console.log('\n--- Migrating Agendas ---');
+  
+  try {
+    let agendas = [];
+    
+    // Try to get agendas from Google Sheets if available
+    if (googleSheetsService) {
+      try {
+        agendas = await googleSheetsService.getAgendas();
+        console.log(`  Found ${agendas.length} agendas from Google Sheets`);
+      } catch (error) {
+        console.log('  Could not fetch from Sheets, using defaults:', error.message);
+        agendas = DEFAULT_AGENDAS;
+      }
+    } else {
+      console.log('  Google Sheets not available, using defaults');
+      agendas = DEFAULT_AGENDAS;
+    }
+    
+    // If still empty, use defaults
+    if (!agendas || agendas.length === 0) {
+      agendas = DEFAULT_AGENDAS;
+    }
+    
+    // Upsert each agenda
+    for (let i = 0; i < agendas.length; i++) {
+      const agendaName = agendas[i];
+      const agendaId = `AGD${String(i + 1).padStart(3, '0')}`;
+      
+      await Agenda.findOneAndUpdate(
+        { agendaId },
+        { 
+          $set: {
+            agendaId,
+            name: agendaName,
+            isDefault: true,
+            order: i,
+          }
+        },
+        { upsert: true }
+      );
+    }
+    
+    console.log(`  ✓ Migrated ${agendas.length} agendas`);
+    return agendas.length;
+  } catch (error) {
+    console.error('Error migrating agendas:', error.message);
+    throw error;
+  }
+}
+
 async function main() {
   console.log('===========================================');
   console.log('  Data Migration: Google Sheets → MongoDB');
@@ -308,10 +372,14 @@ async function main() {
     // Migrate users
     const userCount = await migrateUsers();
 
+    // Migrate agendas
+    const agendaCount = await migrateAgendas();
+
     console.log('\n===========================================');
     console.log('  Migration Complete!');
     console.log(`  - Zones: ${zoneCount}`);
     console.log(`  - Users: ${userCount}`);
+    console.log(`  - Agendas: ${agendaCount}`);
     console.log('===========================================\n');
 
   } catch (error) {
@@ -325,3 +393,4 @@ async function main() {
 }
 
 main();
+

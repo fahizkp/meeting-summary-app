@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getZones, getAttendees, getAgendas, saveMeeting, getMeetingReport, updateMeeting } from '../services/api';
+import { getZones, getAttendees, getAgendas, saveMeeting, getMeetingReport, updateMeeting, checkWeekMeeting } from '../services/api';
 import { getAccessibleZones, hasAnyRole } from '../services/auth';
 import { setZonesCache } from '../services/zoneHelper';
 import ZoneSelector from './ZoneSelector';
@@ -622,6 +622,35 @@ const MeetingForm = () => {
       ? [`*QHLS Status:*`, qhlsFormatted]
       : [];
 
+    // Build meeting role sentences for the end of report
+    const getFirstName = (fullName) => {
+      if (!fullName) return '';
+      return fullName.split(' ')[0];
+    };
+
+    // Look up role from attendance data
+    const getRoleByName = (name) => {
+      if (!name || !meetingData.attendance) return '';
+      const person = meetingData.attendance.find(a => a.name === name);
+      return person?.role || '';
+    };
+
+    const adhyakshanRole = getRoleByName(meetingData.adhyakshan);
+    const swagathamRole = getRoleByName(meetingData.swagatham);
+    const nandhiRole = getRoleByName(meetingData.nandhi);
+
+    const roleSentences = [];
+    if (meetingData.adhyakshan) {
+      roleSentences.push(`മീറ്റിംഗിൽ ${adhyakshanRole} ${getFirstName(meetingData.adhyakshan)} അധ്യക്ഷനായിരുന്നു.`);
+    }
+    if (meetingData.swagatham && meetingData.nandhi) {
+      roleSentences.push(`${swagathamRole} ${getFirstName(meetingData.swagatham)} സ്വാഗതവും ${nandhiRole} ${getFirstName(meetingData.nandhi)} നന്ദിയും പറഞ്ഞു.`);
+    } else if (meetingData.swagatham) {
+      roleSentences.push(`${swagathamRole} ${getFirstName(meetingData.swagatham)} സ്വാഗതം പറഞ്ഞു.`);
+    } else if (meetingData.nandhi) {
+      roleSentences.push(`${nandhiRole} ${getFirstName(meetingData.nandhi)} നന്ദി പറഞ്ഞു.`);
+    }
+
     const lines = [
       `*മീറ്റിംഗ് റിപ്പോർട്ട്*`,
       `━━━━━━━━━━━━━━━━━━━━`,
@@ -630,10 +659,6 @@ const MeetingForm = () => {
       `*തീയതി:* ${meetingData.date}`,
       meetingData.startTime ? `*തുടങ്ങിയ സമയം:* ${formatTime12h(meetingData.startTime)}` : '',
       meetingData.endTime ? `*അവസാനിച്ച സമയം:* ${formatTime12h(meetingData.endTime)}` : '',
-      ``,
-      meetingData.swagatham ? `*സ്വാഗതം:* ${meetingData.swagatham}` : '',
-      meetingData.adhyakshan ? `*അധ്യക്ഷൻ:* ${meetingData.adhyakshan}` : '',
-      meetingData.nandhi ? `*നന്ദി:* ${meetingData.nandhi}` : '',
       ``,
       `*പങ്കെടുത്തവർ:*`,
       report.attendees || 'ആരുമില്ല',
@@ -647,6 +672,8 @@ const MeetingForm = () => {
       `*തീരുമാനങ്ങൾ:*`,
       report.minutes || 'തീരുമാനങ്ങളില്ല',
       ...qhlsSection,
+      ``,
+      ...roleSentences,
     ].filter(line => line !== '').join('\n');
 
     return lines;
@@ -806,10 +833,41 @@ const MeetingForm = () => {
           <div style="margin-bottom: 12px;">
             <h3 style="font-size: 15px; margin: 0 0 6px 0; color: #27ae60; border-bottom: 1px solid #ddd; padding-bottom: 4px;">തീരുമാനങ്ങൾ</h3>
             <pre style="white-space: pre-wrap; font-family: inherit; margin: 0; font-size: 14px;">${reportData.report.minutes || 'തീരുമാനങ്ങളില്ല'}</pre>
+          </div>
+          
           <div style="margin-bottom: 12px;">
             <h3 style="font-size: 15px; margin: 0 0 6px 0; color: #8e44ad; border-bottom: 1px solid #ddd; padding-bottom: 4px;">QHLS</h3>
             ${formatQhlsTable(reportData.report.qhlsStatus)}
           </div>
+          
+          ${(() => {
+        const getFirstName = (fullName) => fullName ? fullName.split(' ')[0] : '';
+        const getRoleByName = (name) => {
+          if (!name || !reportData.meetingData.attendance) return '';
+          const person = reportData.meetingData.attendance.find(a => a.name === name);
+          return person?.role || '';
+        };
+
+        const adhyakshanRole = getRoleByName(reportData.meetingData.adhyakshan);
+        const swagathamRole = getRoleByName(reportData.meetingData.swagatham);
+        const nandhiRole = getRoleByName(reportData.meetingData.nandhi);
+
+        const sentences = [];
+        if (reportData.meetingData.adhyakshan) {
+          sentences.push(`മീറ്റിംഗിൽ ${adhyakshanRole} ${getFirstName(reportData.meetingData.adhyakshan)} അധ്യക്ഷനായിരുന്നു.`);
+        }
+        if (reportData.meetingData.swagatham && reportData.meetingData.nandhi) {
+          sentences.push(`${swagathamRole} ${getFirstName(reportData.meetingData.swagatham)} സ്വാഗതവും ${nandhiRole} ${getFirstName(reportData.meetingData.nandhi)} നന്ദിയും പറഞ്ഞു.`);
+        } else if (reportData.meetingData.swagatham) {
+          sentences.push(`${swagathamRole} ${getFirstName(reportData.meetingData.swagatham)} സ്വാഗതം പറഞ്ഞു.`);
+        } else if (reportData.meetingData.nandhi) {
+          sentences.push(`${nandhiRole} ${getFirstName(reportData.meetingData.nandhi)} നന്ദി പറഞ്ഞു.`);
+        }
+        if (sentences.length > 0) {
+          return `<div style="margin-top: 16px; padding: 10px; background-color: #f9f9f9; border-radius: 8px;"><p style="margin: 0; font-size: 14px; font-style: italic;">${sentences.join(' ')}</p></div>`;
+        }
+        return '';
+      })()}
         </div>
       </div>
     `;
@@ -910,24 +968,68 @@ const MeetingForm = () => {
 
     // Validation
     if (!selectedZone) {
-      setError('ദയവായി ഒരു മണ്ഡലം തിരഞ്ഞെടുക്കുക (Please select a zone)');
+      alert('ദയവായി ഒരു മണ്ഡലം തിരഞ്ഞെടുക്കുക');
       return;
     }
 
     if (!date) {
-      setError('ദയവായി തീയതി നൽകുക (Please provide a date)');
+      alert('ദയവായി തീയതി നൽകുക');
+      return;
+    }
+
+    if (!startTime) {
+      alert('ദയവായി തുടങ്ങിയ സമയം നൽകുക');
+      return;
+    }
+
+    if (!endTime) {
+      alert('ദയവായി അവസാനിച്ച സമയം നൽകുക');
+      return;
+    }
+
+    if (!selectedAgendas || selectedAgendas.length === 0) {
+      alert('ദയവായി കുറഞ്ഞത് ഒരു അജണ്ടയെങ്കിലും തിരഞ്ഞെടുക്കുക');
       return;
     }
 
     const validMinutes = minutes.filter((m) => m.trim() !== '');
     if (validMinutes.length === 0) {
-      setError('ദയവായി കുറഞ്ഞത് ഒരു തീരുമാനമെങ്കിലും ചേർക്കുക (Please add at least one decision)');
+      alert('ദയവായി കുറഞ്ഞത് ഒരു തീരുമാനമെങ്കിലും ചേർക്കുക');
+      return;
+    }
+
+    if (!swagatham) {
+      alert('ദയവായി സ്വാഗതം പറയുന്നയാളെ തിരഞ്ഞെടുക്കുക');
+      return;
+    }
+
+    if (!adhyakshan) {
+      alert('ദയവായി അധ്യക്ഷനെ തിരഞ്ഞെടുക്കുക');
+      return;
+    }
+
+    if (!nandhi) {
+      alert('ദയവായി നന്ദി പറയുന്നയാളെ തിരഞ്ഞെടുക്കുക');
       return;
     }
 
     setSubmitting(true);
 
     try {
+      // Check if meeting already exists for this zone in this week
+      const isEditMode = isEditing && editingMeetingId;
+      const weekCheck = await checkWeekMeeting(
+        selectedZoneName,
+        date,
+        isEditMode ? editingMeetingId : null
+      );
+
+      if (weekCheck.exists) {
+        setSubmitting(false);
+        setError(`ഈ ആഴ്ചയിൽ ഈ മണ്ഡലത്തിന് ഇതിനകം ഒരു മീറ്റിംഗ് ഉണ്ട് (${weekCheck.existingMeeting.date})`);
+        return;
+      }
+
       const meetingData = {
         zoneName: selectedZoneName,
         date,
@@ -951,7 +1053,6 @@ const MeetingForm = () => {
         qhls: qhlsData.filter(row => row.unit || row.day || row.faculty || row.male || row.female),
       };
 
-      const isEditMode = isEditing && editingMeetingId;
       const response = isEditMode
         ? await updateMeeting(editingMeetingId, meetingData)
         : await saveMeeting(meetingData);
@@ -980,16 +1081,17 @@ const MeetingForm = () => {
           console.error('Error fetching report:', err);
         }
 
-        // Reset form
+        // Reset only time-sensitive fields, keep zone and attendees for next meeting
         clearDraftStorage();
-        setSelectedZone('');
         setMinutes(['']);
         setDate(getTodayDate());
         setStartTime('');
         setEndTime('');
-        setSelectedAgendas(agendas);
-        setAttendance({});
-        setZoneUnits([]);
+        setSwagatham('');
+        setAdhyakshan('');
+        setNandhi('');
+        // Keep zone, attendees, agendas populated for next meeting input
+        // Reset QHLS data but keep units
         setQhlsData(buildQhlsRows());
       } else {
         setError('മീറ്റിംഗ് സംഗ്രഹം സേവ് ചെയ്യുന്നതിൽ പിശക് (Error saving meeting summary)');
@@ -1029,22 +1131,24 @@ const MeetingForm = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="startTime">തുടങ്ങിയ സമയം:</label>
+          <label htmlFor="startTime">തുടങ്ങിയ സമയം: <span style={{ color: 'red' }}>*</span></label>
           <input
             type="time"
             id="startTime"
             value={startTime}
             onChange={(e) => setStartTime(e.target.value)}
+            required
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="endTime">അവസാനിച്ച സമയം:</label>
+          <label htmlFor="endTime">അവസാനിച്ച സമയം: <span style={{ color: 'red' }}>*</span></label>
           <input
             type="time"
             id="endTime"
             value={endTime}
             onChange={(e) => setEndTime(e.target.value)}
+            required
           />
         </div>
 
@@ -1085,7 +1189,7 @@ const MeetingForm = () => {
         {/* Meeting Roles Section */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', marginBottom: '20px' }}>
           <div className="form-group">
-            <label htmlFor="swagatham">സ്വാഗതം:</label>
+            <label htmlFor="swagatham">സ്വാഗതം: <span style={{ color: 'red' }}>*</span></label>
             <select
               id="swagatham"
               value={swagatham}
@@ -1108,7 +1212,7 @@ const MeetingForm = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="adhyakshan">അധ്യക്ഷൻ:</label>
+            <label htmlFor="adhyakshan">അധ്യക്ഷൻ: <span style={{ color: 'red' }}>*</span></label>
             <select
               id="adhyakshan"
               value={adhyakshan}
@@ -1131,7 +1235,7 @@ const MeetingForm = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="nandhi">നന്ദി:</label>
+            <label htmlFor="nandhi">നന്ദി: <span style={{ color: 'red' }}>*</span></label>
             <select
               id="nandhi"
               value={nandhi}
@@ -1182,10 +1286,22 @@ const MeetingForm = () => {
                 <p><strong>മണ്ഡലം:</strong> {reportData.meetingData.zoneName}</p>
                 <p><strong>തീയതി:</strong> {reportData.meetingData.date}</p>
                 {reportData.meetingData.startTime && (
-                  <p><strong>തുടങ്ങിയ സമയം:</strong> {reportData.meetingData.startTime}</p>
+                  <p><strong>തുടങ്ങിയ സമയം:</strong> {(() => {
+                    const [h, m] = reportData.meetingData.startTime.split(':');
+                    let hr = parseInt(h, 10);
+                    const ampm = hr >= 12 ? 'PM' : 'AM';
+                    hr = hr % 12 || 12;
+                    return `${hr}:${m} ${ampm}`;
+                  })()}</p>
                 )}
                 {reportData.meetingData.endTime && (
-                  <p><strong>അവസാനിച്ച സമയം:</strong> {reportData.meetingData.endTime}</p>
+                  <p><strong>അവസാനിച്ച സമയം:</strong> {(() => {
+                    const [h, m] = reportData.meetingData.endTime.split(':');
+                    let hr = parseInt(h, 10);
+                    const ampm = hr >= 12 ? 'PM' : 'AM';
+                    hr = hr % 12 || 12;
+                    return `${hr}:${m} ${ampm}`;
+                  })()}</p>
                 )}
               </div>
 

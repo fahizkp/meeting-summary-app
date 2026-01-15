@@ -20,6 +20,7 @@ on:
       - release
       - main
       - master
+      - feature/migration
 
 env:
   REGISTRY: ghcr.io

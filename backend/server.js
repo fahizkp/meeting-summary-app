@@ -1,33 +1,12 @@
 require('dotenv').config();
 
-// Validate critical environment variables before starting
-// Support both new separate spreadsheet IDs and legacy single ID
-const hasSourceId = process.env.GOOGLE_SHEETS_SOURCE_SPREADSHEET_ID;
-const hasTargetId = process.env.GOOGLE_SHEETS_TARGET_SPREADSHEET_ID;
-const hasLegacyId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
-
-if (!hasSourceId && !hasLegacyId) {
-  console.error('ERROR: GOOGLE_SHEETS_SOURCE_SPREADSHEET_ID (or GOOGLE_SHEETS_SPREADSHEET_ID) is not set in .env file');
-  console.error('Please create a .env file in the backend directory with your Google Sheets credentials');
-  console.error('See ENV_SETUP.md for configuration details');
-  process.exit(1);
-}
-
-if (!hasTargetId && !hasLegacyId) {
-  console.error('ERROR: GOOGLE_SHEETS_TARGET_SPREADSHEET_ID (or GOOGLE_SHEETS_SPREADSHEET_ID) is not set in .env file');
-  console.error('Please create a .env file in the backend directory with your Google Sheets credentials');
-  console.error('See ENV_SETUP.md for configuration details');
-  process.exit(1);
-}
-
 const express = require('express');
 const cors = require('cors');
 const apiRoutes = require('./routes/api');
 const authRoutes = require('./routes/auth');
 
-// MongoDB connection and sync
+// MongoDB connection (required)
 const { connectDB, isMongoConnected } = require('./config/mongodb');
-const { startSyncScheduler, getSyncStatus } = require('./jobs/syncToSheets');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -74,7 +53,6 @@ app.get('/health', (req, res) => {
     status: 'ok', 
     message: 'Meeting Summary API is running',
     mongodb: isMongoConnected() ? 'connected' : 'disconnected',
-    sync: getSyncStatus(),
   });
 });
 
@@ -100,18 +78,21 @@ app.use((err, req, res, next) => {
 
 // Initialize MongoDB and start server
 async function startServer() {
-  // Try to connect to MongoDB (non-blocking, with fallback to Google Sheets)
-  if (process.env.MONGODB_URI) {
-    console.log('Connecting to MongoDB...');
-    await connectDB();
-    
-    // Start background sync scheduler if MongoDB is connected
-    if (isMongoConnected()) {
-      console.log('Starting background sync scheduler...');
-      startSyncScheduler();
-    }
-  } else {
-    console.log('MONGODB_URI not set - using Google Sheets only');
+  // Validate MongoDB URI is set
+  if (!process.env.MONGODB_URI) {
+    console.error('ERROR: MONGODB_URI is not set in .env file');
+    console.error('Please set MONGODB_URI to connect to MongoDB');
+    process.exit(1);
+  }
+
+  // Connect to MongoDB (required)
+  console.log('Connecting to MongoDB...');
+  await connectDB();
+  
+  if (!isMongoConnected()) {
+    console.error('ERROR: Failed to connect to MongoDB');
+    console.error('Please check your MONGODB_URI and ensure MongoDB is running');
+    process.exit(1);
   }
 
   // Start Express server
@@ -122,9 +103,7 @@ async function startServer() {
     console.log(`Server is running on port ${PORT}`);
     console.log(`Health check: http://localhost:${PORT}/health`);
     console.log(`Debug endpoint: http://localhost:${PORT}/api/debug/env`);
-    console.log(`Source Spreadsheet (read): ${hasSourceId ? 'Set' : (hasLegacyId ? 'Using legacy ID' : 'NOT SET')}`);
-    console.log(`Target Spreadsheet (write): ${hasTargetId ? 'Set' : (hasLegacyId ? 'Using legacy ID' : 'NOT SET')}`);
-    console.log(`MongoDB: ${isMongoConnected() ? 'Connected ✓' : 'Not connected (using Sheets fallback)'}`);
+    console.log(`MongoDB: Connected ✓`);
     console.log(`===========================================\n`);
   });
 }

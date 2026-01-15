@@ -111,12 +111,12 @@ const MeetingReport = () => {
           setSelectedReport(null);
           setSelectedMeetingData(null);
         }
-        alert('മീറ്റിംഗ് ഇല്ലാതാക്കി (Meeting deleted)');
+        alert('മീറ്റിംഗ് ഇല്ലാതാക്കി');
       } else {
-        alert('മീറ്റിംഗ് ഇല്ലാതാക്കുന്നതിൽ പിശക് (Error deleting meeting)');
+        alert('മീറ്റിംഗ് ഇല്ലാതാക്കുന്നതിൽ പിശക്');
       }
     } catch (err) {
-      alert('മീറ്റിംഗ് ഇല്ലാതാക്കുന്നതിൽ പിശക് (Error deleting meeting): ' + err.message);
+      alert('മീറ്റിംഗ് ഇല്ലാതാക്കുന്നതിൽ പിശക് : ' + err.message);
     } finally {
       setDeletingId(null);
     }
@@ -173,20 +173,31 @@ const MeetingReport = () => {
       return fullName.split(' ')[0];
     };
 
+    // Look up role from attendance data
+    const getRoleByName = (name) => {
+      if (!name || !selectedMeetingData.attendance) return '';
+      const person = selectedMeetingData.attendance.find(a => a.name === name);
+      return person?.role || '';
+    };
+
+    const adhyakshanRole = getRoleByName(selectedMeetingData.adhyakshan);
     const adhyakshanLine = selectedMeetingData.adhyakshan
-      ? `മീറ്റിംഗിൽ ${getFirstName(selectedMeetingData.adhyakshan)} അധ്യക്ഷനായിരുന്നു`
+      ? `മീറ്റിംഗിൽ ${adhyakshanRole} ${getFirstName(selectedMeetingData.adhyakshan)} അധ്യക്ഷനായിരുന്നു.`
       : '';
 
     let welcomeVoteLine = '';
     const sName = getFirstName(selectedMeetingData.swagatham);
     const nName = getFirstName(selectedMeetingData.nandhi);
 
+    const sRole = getRoleByName(selectedMeetingData.swagatham);
+    const nRole = getRoleByName(selectedMeetingData.nandhi);
+
     if (sName && nName) {
-      welcomeVoteLine = `${sName} സ്വാഗതവും ${nName} നന്ദിയും പറഞ്ഞു.`;
+      welcomeVoteLine = `${sRole} ${sName} സ്വാഗതവും ${nRole} ${nName} നന്ദിയും പറഞ്ഞു.`;
     } else if (sName) {
-      welcomeVoteLine = `${sName} സ്വാഗതം പറഞ്ഞു.`;
+      welcomeVoteLine = `${sRole} ${sName} സ്വാഗതം പറഞ്ഞു.`;
     } else if (nName) {
-      welcomeVoteLine = `${nName} നന്ദി പറഞ്ഞു.`;
+      welcomeVoteLine = `${nRole} ${nName} നന്ദി പറഞ്ഞു.`;
     }
 
     // Only include QHLS section if there's valid data
@@ -194,26 +205,31 @@ const MeetingReport = () => {
       ? `\nQHLS Status:\n${qhlsFormatted}`
       : '';
 
-    const reportText = `മീറ്റിംഗ് റിപ്പോർട്ട്
-━━━━━━━━━━━━━━━━━━━━
-മണ്ഡലം: ${selectedMeetingData.zoneName}
+    const reportText = `*മീറ്റിംഗ് റിപ്പോർട്ട്*
+━━━━━━━━━━━━━━━━
+*മണ്ഡലം:* *${selectedMeetingData.zoneName}*
 
-തീയതി: ${selectedMeetingData.date}
-${selectedMeetingData.startTime ? `തുടങ്ങിയ സമയം: ${formatTime12h(selectedMeetingData.startTime)}` : ''}
-${selectedMeetingData.endTime ? `അവസാനിച്ച സമയം: ${formatTime12h(selectedMeetingData.endTime)}` : ''}
+*തീയതി:* ${selectedMeetingData.date}
+${selectedMeetingData.startTime ? `*തുടങ്ങിയ സമയം:* ${formatTime12h(selectedMeetingData.startTime)}` : ''}
+${selectedMeetingData.endTime ? `*അവസാനിച്ച സമയം:* ${formatTime12h(selectedMeetingData.endTime)}` : ''}
 
-${adhyakshanLine ? adhyakshanLine + '\n' : ''}${welcomeVoteLine ? welcomeVoteLine + '\n' : ''}
-പങ്കെടുത്തവർ:
+*പങ്കെടുത്തവർ:*
 ${selectedReport.attendees || 'ആരുമില്ല'}
 
-ലീവ് ആയവർ:
+*ലീവ് ആയവർ:*
 ${selectedReport.leaveAayavar || 'ആരുമില്ല'}
 
-അജണ്ടകൾ:
+*അജണ്ടകൾ:*
 ${selectedReport.agenda || 'അജണ്ടകളില്ല'}
 
-തീരുമാനങ്ങൾ:
-${selectedReport.minutes || 'തീരുമാനങ്ങളില്ല'}${qhlsSection}`;
+*തീരുമാനങ്ങൾ:*
+${selectedReport.minutes || 'തീരുമാനങ്ങളില്ല'}${qhlsSection}
+
+${welcomeVoteLine ? welcomeVoteLine + '\n' : ''}
+${adhyakshanLine ? adhyakshanLine + '\n' : ''}
+`;
+
+
 
     navigator.clipboard.writeText(reportText).then(() => {
       alert('റിപ്പോർട്ട് കോപ്പി ചെയ്തു! (Report copied!)');

@@ -8,6 +8,8 @@ const District = require('../models/District');
 const Zone = require('../models/Zone');
 const Unit = require('../models/Unit');
 const User = require('../models/User');
+const Meeting = require('../models/Meeting');
+const Agenda = require('../models/Agenda');
 
 class MongoService {
   /**
@@ -49,6 +51,10 @@ class MongoService {
 
   async getZoneById(zoneId) {
     return Zone.findOne({ zoneId });
+  }
+
+  async getZoneByName(zoneName) {
+    return Zone.findOne({ name: zoneName });
   }
 
   async createZone(data) {
@@ -155,7 +161,6 @@ class MongoService {
 
   async getAttendeesByZone(zoneId) {
     // Get zone info for unit members
-    const Zone = require('../models/Zone');
     const zoneInfo = await Zone.findOne({ zoneId });
     const currentZoneName = zoneInfo ? zoneInfo.name : '';
 
@@ -220,6 +225,291 @@ class MongoService {
     return attendees;
   }
 
+  // ==================== AGENDAS ====================
+
+  async getAgendas() {
+    const agendas = await Agenda.find().sort({ order: 1 });
+    return agendas.map(a => a.name);
+  }
+
+  async getAllAgendaDocuments() {
+    return Agenda.find().sort({ order: 1 });
+  }
+
+  async createAgenda(data) {
+    const agenda = new Agenda(data);
+    return agenda.save();
+  }
+
+  async upsertAgenda(agendaId, data) {
+    return Agenda.findOneAndUpdate(
+      { agendaId },
+      { $set: { ...data, agendaId } },
+      { new: true, upsert: true }
+    );
+  }
+
+  // ==================== MEETINGS ====================
+
+  async getMeetingById(meetingId) {
+    const meeting = await Meeting.findOne({ meetingId });
+    if (!meeting) return null;
+
+    return {
+      meetingId: meeting.meetingId,
+      zoneName: meeting.zoneName,
+      zoneId: meeting.zoneId,
+      date: meeting.date,
+      startTime: meeting.startTime,
+      endTime: meeting.endTime,
+      agendas: meeting.agendas || [],
+      minutes: meeting.minutes || [],
+      attendance: meeting.attendance || [],
+      qhls: meeting.qhls || [],
+      swagatham: meeting.swagatham || '',
+      adhyakshan: meeting.adhyakshan || '',
+      nandhi: meeting.nandhi || '',
+      sheetName: meeting.sheetName || '',
+      savedDate: meeting.createdAt?.toISOString() || '',
+    };
+  }
+
+  async getAllMeetings() {
+    const meetings = await Meeting.find().sort({ createdAt: -1 });
+    return meetings.map(m => ({
+      meetingId: m.meetingId,
+      zoneName: m.zoneName,
+      zoneId: m.zoneId,
+      date: m.date,
+      savedDate: m.createdAt?.toISOString() || '',
+    }));
+  }
+
+  async getMeetingsByDateRange(startDate, endDate) {
+    const query = {};
+    
+    if (startDate || endDate) {
+      query.date = {};
+      if (startDate) query.date.$gte = startDate;
+      if (endDate) query.date.$lte = endDate;
+    }
+
+    const meetings = await Meeting.find(query).sort({ date: -1 });
+    return meetings.map(m => ({
+      meetingId: m.meetingId,
+      zoneName: m.zoneName,
+      zoneId: m.zoneId,
+      date: m.date,
+      startTime: m.startTime,
+      endTime: m.endTime,
+      attendance: m.attendance || [],
+      qhls: m.qhls || [],
+      sheetName: m.sheetName || '',
+      savedDate: m.createdAt?.toISOString() || '',
+    }));
+  }
+
+  async getMeetingsByZone(zoneId) {
+    const meetings = await Meeting.find({ zoneId }).sort({ date: -1 });
+    return meetings;
+  }
+
+  /**
+   * Get the week boundaries (Wednesday to Tuesday) for a given date
+   * @param {string} dateStr - Date string in YYYY-MM-DD format
+   * @returns {Object} { weekStart, weekEnd } in YYYY-MM-DD format
+   */
+  getWeekBoundaries(dateStr) {
+    const date = new Date(dateStr);
+    const dayOfWeek = date.getDay(); // 0 = Sunday, 3 = Wednesday
+    
+    // Calculate days to subtract to get to Wednesday
+    // If today is Wednesday (3), subtract 0
+    // If today is Thursday (4), subtract 1
+    // If today is Tuesday (2), subtract 6
+    // If today is Sunday (0), subtract 4
+    let daysToWednesday;
+    if (dayOfWeek >= 3) {
+      daysToWednesday = dayOfWeek - 3;
+    } else {
+      daysToWednesday = dayOfWeek + 4; // Sunday=4, Monday=5, Tuesday=6
+    }
+    
+    const weekStart = new Date(date);
+    weekStart.setDate(date.getDate() - daysToWednesday);
+    
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6); // Tuesday
+    
+    const formatDate = (d) => d.toISOString().split('T')[0];
+    
+    return {
+      weekStart: formatDate(weekStart),
+      weekEnd: formatDate(weekEnd),
+    };
+  }
+
+  /**
+   * Check if a meeting already exists for a zone in a given week
+   * @param {string} zoneName - Zone name
+   * @param {string} dateStr - Date of the new meeting
+   * @param {string} excludeMeetingId - Meeting ID to exclude (for updates)
+   * @returns {Object|null} Existing meeting or null
+   */
+  async getMeetingForZoneWeek(zoneName, dateStr, excludeMeetingId = null) {
+    const { weekStart, weekEnd } = this.getWeekBoundaries(dateStr);
+    
+    const query = {
+      zoneName,
+      date: { $gte: weekStart, $lte: weekEnd },
+    };
+    
+    if (excludeMeetingId) {
+      query.meetingId = { $ne: excludeMeetingId };
+    }
+    
+    const existingMeeting = await Meeting.findOne(query);
+    
+    if (existingMeeting) {
+      return {
+        exists: true,
+        meetingId: existingMeeting.meetingId,
+        date: existingMeeting.date,
+        weekStart,
+        weekEnd,
+      };
+    }
+    
+    return null;
+  }
+
+  async saveMeeting(data) {
+    // Generate unique meeting ID
+    const meetingId = `MEET-${Date.now()}`;
+    
+    // Try to find zoneId from zoneName
+    let zoneId = data.zoneId || '';
+    if (!zoneId && data.zoneName) {
+      const zone = await this.getZoneByName(data.zoneName);
+      if (zone) zoneId = zone.zoneId;
+    }
+
+    const meeting = new Meeting({
+      meetingId,
+      zoneId,
+      zoneName: data.zoneName,
+      date: data.date,
+      startTime: data.startTime || '',
+      endTime: data.endTime || '',
+      agendas: data.agendas || [],
+      minutes: data.minutes || [],
+      attendance: data.attendance || [],
+      qhls: data.qhls || [],
+      swagatham: data.swagatham || '',
+      adhyakshan: data.adhyakshan || '',
+      nandhi: data.nandhi || '',
+    });
+
+    await meeting.save();
+    return { meetingId, success: true };
+  }
+
+  async updateMeeting(meetingId, data) {
+    const meeting = await Meeting.findOne({ meetingId });
+    if (!meeting) return null;
+
+    // Update fields
+    if (data.zoneName) meeting.zoneName = data.zoneName;
+    if (data.date) meeting.date = data.date;
+    if (data.startTime !== undefined) meeting.startTime = data.startTime;
+    if (data.endTime !== undefined) meeting.endTime = data.endTime;
+    if (data.agendas) meeting.agendas = data.agendas;
+    if (data.minutes) meeting.minutes = data.minutes;
+    if (data.attendance) meeting.attendance = data.attendance;
+    if (data.qhls) meeting.qhls = data.qhls;
+    if (data.swagatham !== undefined) meeting.swagatham = data.swagatham;
+    if (data.adhyakshan !== undefined) meeting.adhyakshan = data.adhyakshan;
+    if (data.nandhi !== undefined) meeting.nandhi = data.nandhi;
+
+    await meeting.save();
+    return { success: true, meetingId };
+  }
+
+  async deleteMeeting(meetingId) {
+    const result = await Meeting.deleteOne({ meetingId });
+    return result.deletedCount > 0 ? { success: true } : null;
+  }
+
+  // ==================== REPORT GENERATION ====================
+
+  generateReport(meetingData) {
+    const { attendance, agendas, minutes, qhls } = meetingData;
+
+    // Separate present and leave attendees
+    const presentAttendees = [];
+    const leaveAttendees = [];
+
+    if (attendance && Array.isArray(attendance)) {
+      attendance.forEach((item) => {
+        const name = item.name;
+
+        if (item.status === 'present') {
+          presentAttendees.push(name);
+        } else if (item.status === 'leave') {
+          const reason = item.reason ? ` (${item.reason})` : '';
+          leaveAttendees.push(`${name}${reason}`);
+        }
+      });
+    }
+
+    // Format QHLS data
+    let qhlsReport = '';
+    if (qhls && qhls.length > 0) {
+      // Filter out rows where both male and female are 0 or empty
+      const validQhlsRows = qhls.filter(row => {
+        const male = parseInt(row.male, 10) || 0;
+        const female = parseInt(row.female, 10) || 0;
+        return (male > 0 || female > 0);
+      });
+
+      if (validQhlsRows.length > 0) {
+        const headings = 'യൂണിറ്റ്, ദിവസം, ഫാക്കൽറ്റി, പുരുഷൻ, സ്ത്രീ';
+        
+        const qhlsRowsFormatted = validQhlsRows.map(row => {
+          const unit = row.unit || '';
+          const day = row.day || '';
+          const faculty = row.faculty || '';
+          const male = row.male || '0';
+          const female = row.female || '0';
+          return `${unit}, ${day}, ${faculty}, ${male}, ${female}`;
+        });
+
+        qhlsReport = `${headings}\n${qhlsRowsFormatted.join('\n')}`;
+      }
+    }
+
+    // Format agendas with serial numbers
+    const formattedAgendas = agendas && agendas.length > 0
+      ? agendas.map((agenda, index) => `${index + 1}. ${agenda}`).join('\n')
+      : 'അജണ്ടകളില്ല';
+
+    // Format minutes with serial numbers
+    const formattedMinutes = minutes && minutes.length > 0
+      ? minutes.map((minute, index) => `${index + 1}. ${minute}`).join('\n')
+      : 'തീരുമാനങ്ങളില്ല';
+
+    // Build report
+    const report = {
+      attendees: presentAttendees.join('\n'),
+      leaveAayavar: leaveAttendees.join('\n'),
+      agenda: formattedAgendas,
+      minutes: formattedMinutes,
+      qhlsStatus: qhlsReport,
+    };
+
+    return report;
+  }
+
   // ==================== BULK OPERATIONS ====================
 
   async bulkUpsertZones(zones) {
@@ -257,3 +547,4 @@ class MongoService {
 }
 
 module.exports = new MongoService();
+

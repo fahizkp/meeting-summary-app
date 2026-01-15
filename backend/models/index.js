@@ -6,6 +6,7 @@ const User = require('./User');
 const Committee = require('./Committee');
 const CommitteeRole = require('./CommitteeRole');
 const Meeting = require('./Meeting');
+const Agenda = require('./Agenda');
 
 module.exports = {
   District,
@@ -15,4 +16,6 @@ module.exports = {
   Committee,
   CommitteeRole,
   Meeting,
+  Agenda,
 };
+

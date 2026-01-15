@@ -17,6 +17,41 @@ const UserManagement = () => {
     const [fetchError, setFetchError] = useState(null);
     const formRef = React.useRef(null);
 
+    // Role priority: 1 = highest
+    const ROLE_PRIORITY = {
+        admin: 1,
+        district_admin: 2,
+        zone_admin: 3,
+    };
+
+    const ROLE_LABELS = {
+        admin: 'Admin',
+        district_admin: 'District Admin',
+        zone_admin: 'Zone Admin',
+    };
+
+    const ROLE_COLORS = {
+        admin: { bg: '#dc3545', color: 'white' }, // Red
+        district_admin: { bg: '#0d6efd', color: 'white' }, // Blue
+        zone_admin: { bg: '#28a745', color: 'white' }, // Green
+    };
+
+    // Get highest priority role for a user
+    const getHighestRole = (roles) => {
+        if (!roles || roles.length === 0) return null;
+        return roles.reduce((highest, role) => {
+            if (!highest) return role;
+            return ROLE_PRIORITY[role] < ROLE_PRIORITY[highest] ? role : highest;
+        }, null);
+    };
+
+    // Sort users by role priority
+    const sortedUsers = [...users].sort((a, b) => {
+        const aHighest = getHighestRole(a.roles);
+        const bHighest = getHighestRole(b.roles);
+        return (ROLE_PRIORITY[aHighest] || 99) - (ROLE_PRIORITY[bHighest] || 99);
+    });
+
     const [formData, setFormData] = useState({
         username: '',
         password: '',
@@ -239,7 +274,7 @@ const UserManagement = () => {
 
                         <div style={{ marginBottom: '16px' }}>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
-                                Roles
+                                Roles <span style={{ fontSize: '12px', color: '#666', fontWeight: 'normal' }}>(Priority: Admin &gt; District Admin &gt; Zone Admin)</span>
                             </label>
                             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                                 {['admin', 'district_admin', 'zone_admin'].map(role => (
@@ -248,22 +283,21 @@ const UserManagement = () => {
                                         alignItems: 'center',
                                         gap: '8px',
                                         padding: '8px 16px',
-                                        backgroundColor: formData.roles.includes(role) ? '#e6f0ff' : '#f5f5f5',
-                                        color: '#333',
-                                        border: formData.roles.includes(role) ? '1px solid var(--primary-blue)' : '1px solid transparent',
+                                        backgroundColor: formData.roles.includes(role) ? ROLE_COLORS[role].bg : '#f5f5f5',
+                                        color: formData.roles.includes(role) ? ROLE_COLORS[role].color : '#333',
+                                        border: formData.roles.includes(role) ? '2px solid transparent' : '2px solid #ddd',
                                         borderRadius: '20px',
                                         cursor: 'pointer',
                                         transition: 'all 0.2s',
+                                        fontWeight: formData.roles.includes(role) ? '600' : 'normal',
                                     }}>
                                         <input
                                             type="checkbox"
                                             checked={formData.roles.includes(role)}
                                             onChange={() => handleRoleToggle(role)}
-                                            style={{ cursor: 'pointer' }}
+                                            style={{ cursor: 'pointer', display: 'none' }}
                                         />
-                                        {role === 'admin' && 'Admin'}
-                                        {role === 'district_admin' && 'District Admin'}
-                                        {role === 'zone_admin' && 'Zone Admin'}
+                                        {ROLE_LABELS[role]}
                                     </label>
                                 ))}
                             </div>
@@ -478,24 +512,49 @@ const UserManagement = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {users.length === 0 ? (
+                        {sortedUsers.length === 0 ? (
                             <tr>
                                 <td colSpan="4" style={{ padding: '24px', textAlign: 'center', color: '#999' }}>
                                     No users found. Add new user from above.
                                 </td>
                             </tr>
                         ) : (
-                            users.map((user, index) => (
+                            sortedUsers.map((user, index) => (
                                 <tr key={user.username} style={{
                                     backgroundColor: index % 2 === 0 ? 'white' : '#f9f9f9',
                                     borderBottom: '1px solid #eee',
                                 }}>
-                                    <td style={{ padding: '12px' }}>{user.username}</td>
+                                    <td style={{ padding: '12px', fontWeight: '600' }}>{user.username}</td>
                                     <td style={{ padding: '12px' }}>
-                                        {user.roles?.join(', ') || '-'}
+                                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                            {user.roles?.sort((a, b) => ROLE_PRIORITY[a] - ROLE_PRIORITY[b]).map(role => (
+                                                <span
+                                                    key={role}
+                                                    style={{
+                                                        padding: '4px 10px',
+                                                        backgroundColor: ROLE_COLORS[role]?.bg || '#666',
+                                                        color: ROLE_COLORS[role]?.color || 'white',
+                                                        borderRadius: '12px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '600',
+                                                    }}
+                                                >
+                                                    {ROLE_LABELS[role] || role}
+                                                </span>
+                                            )) || '-'}
+                                        </div>
                                     </td>
                                     <td style={{ padding: '12px' }}>
-                                        {user.zoneAccess?.length > 0 ? `${user.zoneAccess.length} zones` : '-'}
+                                        {user.zoneAccess?.length > 0 ? (
+                                            <span style={{
+                                                padding: '4px 10px',
+                                                backgroundColor: '#e9ecef',
+                                                borderRadius: '12px',
+                                                fontSize: '12px',
+                                            }}>
+                                                {user.zoneAccess.length} zone{user.zoneAccess.length > 1 ? 's' : ''}
+                                            </span>
+                                        ) : '-'}
                                     </td>
                                     <td style={{ padding: '12px', textAlign: 'center' }}>
                                         <button
