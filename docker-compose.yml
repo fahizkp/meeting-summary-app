@@ -11,6 +11,7 @@ services:
     networks:
       - web
       - meeting-summary-internal
+      - infra
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
@@ -41,4 +42,5 @@ services:
 networks:
   web:
     external: true
+  infra:
   meeting-summary-internal:
