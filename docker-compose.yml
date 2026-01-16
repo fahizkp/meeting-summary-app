@@ -7,6 +7,7 @@ services:
       - mongo-data:/data/db
     networks:
       - meeting-summary-internal
+      - infra
     ports:
       - "27017:27017"
 
@@ -24,6 +25,7 @@ services:
       - mongo
     networks:
       - meeting-summary-internal
+      - infra
     ports:
       - "3001:3001"
 
@@ -42,7 +44,9 @@ services:
 
 networks:
   meeting-summary-internal:
-
+    external: true
+  infra:
+    external: true
 
 volumes:
   mongo-data:
