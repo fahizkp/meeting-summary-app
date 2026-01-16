@@ -4,108 +4,63 @@ import MeetingForm from './components/MeetingForm';
 import MeetingReport from './components/MeetingReport';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
-import { logout, getUser, hasRole, hasAnyRole } from './services/auth';
+import { logout, getUser, hasRole, hasAnyRole, isAntiGravityUser } from './services/auth';
+import BottomNavigation from './components/BottomNavigation';
 
 import Dashboard from './components/Dashboard';
 import UserManagement from './components/UserManagement';
+import HomeRedirect from './components/HomeRedirect';
 
 // Layout component for authenticated pages
 const AuthenticatedLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState('form');
   const user = getUser();
+  const isAntiGravity = isAntiGravityUser(user);
 
-  useEffect(() => {
-    // Update active tab when  useEffect(() => {
-    if (location.pathname === '/report') {
-      setActiveTab('report');
-    } else if (location.pathname === '/dashboard') {
-      setActiveTab('dashboard');
-    } else if (location.pathname === '/admin') {
-      setActiveTab('admin');
-    } else {
-      // Default tab logic based on user role
-      const user = getUser();
-      if (user && user.roles) {
-        // If user is ONLY district_admin (no zone_admin or admin), redirect to dashboard
-        if (hasRole('district_admin') && !hasRole('zone_admin') && !hasRole('admin')) {
-          setActiveTab('dashboard');
-          navigate('/dashboard');
-        } else {
-          setActiveTab('form');
-        }
-      } else {
-        setActiveTab('form');
-      }
-    }
-  }, [location.pathname, navigate]);
+  // Redirect logic removed from here as it's now handled by HomeRedirect or specific route guards
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    if (tab === 'report') {
-      navigate('/report');
-    } else if (tab === 'dashboard') {
-      navigate('/dashboard');
-    } else if (tab === 'admin') {
-      navigate('/admin');
-    } else {
-      navigate('/');
-    }
-  };
-
-  const navStyles = {
-    container: {
+  const headerStyles = {
+    header: {
       display: 'flex',
-      flexDirection: 'column',
-      gap: '12px',
+      alignItems: 'center',
+      justifyContent: 'space-between',
       marginBottom: '24px',
       padding: '16px',
       background: 'var(--white)',
       borderRadius: '16px',
       boxShadow: 'var(--shadow-md)',
     },
-    tabsRow: {
-      display: 'flex',
-      gap: '8px',
-      flexWrap: 'wrap',
-    },
-    tab: (isActive) => ({
-      flex: '1',
-      minWidth: '100px',
-      padding: '12px 16px',
-      background: isActive
-        ? 'var(--primary)'
-        : 'var(--gray-200)',
-      color: isActive ? 'white' : 'var(--gray-600)',
-      border: 'none',
-      borderRadius: '12px',
-      cursor: 'pointer',
-      fontFamily: 'Anek Malayalam, sans-serif',
-      fontSize: '0.9rem',
-      fontWeight: '600',
-      transition: 'all 0.2s ease',
-      boxShadow: isActive ? 'var(--shadow-cute)' : 'none',
-    }),
-    userRow: {
+    userInfo: {
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingTop: '12px',
-      borderTop: '1px solid #e0e0e0',
+      gap: '12px',
     },
     username: {
       color: 'var(--primary)',
       fontSize: '14px',
-      fontWeight: '500',
+      fontWeight: '600',
       background: 'var(--primary-light)',
-      padding: '6px 12px',
+      padding: '8px 16px',
       borderRadius: '20px',
+    },
+    antiGravityBadge: {
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      color: 'white',
+      padding: '6px 12px',
+      borderRadius: '16px',
+      fontSize: '11px',
+      fontWeight: '700',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px',
+      boxShadow: '0 2px 8px rgba(102, 126, 234, 0.4)',
+      animation: 'pulse 2s ease-in-out infinite',
     },
     logoutBtn: {
       padding: '10px 20px',
@@ -119,65 +74,42 @@ const AuthenticatedLayout = ({ children }) => {
       fontWeight: '600',
       transition: 'all 0.2s ease',
     },
+    contentWrapper: {
+      paddingBottom: '90px', // Space for bottom navigation
+    },
   };
 
   return (
     <div>
-      <nav style={navStyles.container}>
-        <div style={navStyles.tabsRow}>
-          {/* Meeting Form - Only for zone_admin */}
-          {hasAnyRole(['zone_admin', 'admin']) && (
-            <button
-              onClick={() => handleTabChange('form')}
-              style={navStyles.tab(activeTab === 'form')}
-            >
-              മീറ്റിംഗ് ഫോം
-            </button>
-          )}
-
-          {/* Report - For all authenticated users */}
-          <button
-            onClick={() => handleTabChange('report')}
-            style={navStyles.tab(activeTab === 'report')}
-          >
-            റിപ്പോർട്ട്
-          </button>
-
-          {/* Dashboard - Only for district_admin and admin */}
-          {hasAnyRole(['district_admin', 'admin']) && (
-            <button
-              onClick={() => handleTabChange('dashboard')}
-              style={navStyles.tab(activeTab === 'dashboard')}
-            >
-              ഡാഷ്ബോർഡ്
-            </button>
-          )}
-
-          {/* Admin - Only for admin */}
-          {hasRole('admin') && (
-            <button
-              onClick={() => handleTabChange('admin')}
-              style={navStyles.tab(activeTab === 'admin')}
-            >
-              അഡ്മിൻ
-            </button>
-          )}
-        </div>
-        <div style={navStyles.userRow}>
+      {/* Simple header with username and logout */}
+      <header style={headerStyles.header}>
+        <div style={headerStyles.userInfo}>
           {user && (
-            <span style={navStyles.username}>
+            <span style={headerStyles.username}>
               {user.username}
             </span>
           )}
-          <button
-            onClick={handleLogout}
-            style={navStyles.logoutBtn}
-          >
-            ലോഗൗട്ട്
-          </button>
+          {isAntiGravity && (
+            <span style={headerStyles.antiGravityBadge}>
+              ⚡ ANTI-GRAVITY
+            </span>
+          )}
         </div>
-      </nav>
-      {children}
+        <button
+          onClick={handleLogout}
+          style={headerStyles.logoutBtn}
+        >
+          ലോഗൗട്ട്
+        </button>
+      </header>
+
+      {/* Main content with bottom padding */}
+      <div style={headerStyles.contentWrapper}>
+        {children}
+      </div>
+
+      {/* Bottom Navigation */}
+      <BottomNavigation />
     </div>
   );
 };
@@ -190,6 +122,14 @@ function App() {
         path="/"
         element={
           <ProtectedRoute>
+            <HomeRedirect />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/form"
+        element={
+          <ProtectedRoute requiredAnyRole={['admin', 'zone_admin']}>
             <AuthenticatedLayout>
               <MeetingForm />
             </AuthenticatedLayout>
@@ -209,15 +149,10 @@ function App() {
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredAnyRole={['admin', 'district_admin']}>
             <AuthenticatedLayout>
               <Dashboard onNavigate={(id) => {
-                // Navigation not fully implemented for view details from dashboard yet
-                // But typically would go to report view with query param or specific route
-                // For now, we'll re-use MeetingReport logic if possible or just navigate to report list
-                // Since Routing doesn't support /report/:id directly in the definition above, we might need to adjust.
-                // Actually MeetingReport listens to state or just shows list.
-                // We can make Dashboard pass state to navigate.
+                // Navigation logic
               }} />
             </AuthenticatedLayout>
           </ProtectedRoute>
@@ -226,7 +161,7 @@ function App() {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole="admin">
             <AuthenticatedLayout>
               <UserManagement />
             </AuthenticatedLayout>

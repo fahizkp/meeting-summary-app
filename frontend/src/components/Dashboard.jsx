@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDashboardStats, getZones, getMeetingReport } from '../services/api';
+import { getUser, hasRole } from '../services/auth';
 import AttendanceSummary from './AttendanceSummary';
 
 const Dashboard = () => {
@@ -41,7 +42,12 @@ const Dashboard = () => {
 
     const loadZones = async () => {
         try {
-            const response = await getZones();
+            const user = getUser();
+            // If district_admin (not admin), filter by districtAccess
+            const isDistrictAdmin = hasRole('district_admin', user) && !hasRole('admin', user);
+            const districts = isDistrictAdmin ? user.districtAccess?.join(',') : null;
+
+            const response = await getZones(districts);
             if (response.success) {
                 setZonesList(response.zones.map(z => z.name));
             }
@@ -403,8 +409,8 @@ const Dashboard = () => {
                     <div className="card-header">
                         <h3>ഹാജർ സംഗ്രഹം</h3>
                         <div className="header-buttons">
-                            <button className="btn-link" onClick={() => setViewMode('attendance_summary')}>Weekly View &rarr;</button>
-                            <button className="btn-link" onClick={() => setViewMode('attendance_sheet')}>Full Register &rarr;</button>
+                            <button className="btn-link" onClick={() => setViewMode('attendance_summary')}>Attendance Register &rarr;</button>
+                            <button className="btn-link" onClick={() => setViewMode('attendance_sheet')}>Stats View &rarr;</button>
                         </div>
                     </div>
                     <div className="table-responsive">
@@ -453,8 +459,10 @@ const Dashboard = () => {
         return (
             <div className="card full-width">
                 <div className="card-header">
-                    <button className="btn-back" onClick={() => setViewMode('dashboard')}>&larr; Back to Dashboard</button>
-                    <h3>Weekly Attendance Summary</h3>
+                    <button className="back-button" onClick={() => setViewMode('dashboard')}>
+                        <span className="icon">←</span> Back
+                    </button>
+                    <h3>Attendance Register</h3>
                 </div>
                 <AttendanceSummary
                     zoneId={selectedZone}
@@ -473,8 +481,10 @@ const Dashboard = () => {
         return (
             <div className="card full-width">
                 <div className="card-header">
-                    <button className="btn-back" onClick={() => setViewMode('dashboard')}>&larr; Back to Dashboard</button>
-                    <h3>Full Attendance Register</h3>
+                    <button className="back-button" onClick={() => setViewMode('dashboard')}>
+                        <span className="icon">←</span> Back
+                    </button>
+                    <h3>Detailed Attendance Stats</h3>
                 </div>
                 <div className="table-responsive">
                     <table className="register-table">
@@ -516,11 +526,13 @@ const Dashboard = () => {
         return (
             <div className="card full-width report-view">
                 <div className="card-header">
-                    <button className="btn-back" onClick={() => {
+                    <button className="back-button" onClick={() => {
                         setViewMode('dashboard');
                         setSelectedReport(null);
                         setSelectedMeetingData(null);
-                    }}>&larr; Back</button>
+                    }}>
+                        <span className="icon">←</span> Back
+                    </button>
                     <h3>മീറ്റിംഗ് റിപ്പോർട്ട്</h3>
                     <button className="print-btn" onClick={handlePrintReport}>🖨️ Print</button>
                 </div>
@@ -561,9 +573,27 @@ const Dashboard = () => {
         );
     };
 
+    const user = getUser();
+    const isDistrictAdmin = hasRole('district_admin', user) && !hasRole('admin', user);
+
     return (
         <div className="container dashboard-container">
-            <h2 className="page-title">District Admin Dashboard</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                <h2 className="page-title" style={{ margin: 0 }}>Dashboard</h2>
+                {isDistrictAdmin && (
+                    <span style={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white',
+                        padding: '6px 14px',
+                        borderRadius: '20px',
+                        fontSize: '0.85rem',
+                        fontWeight: '600',
+                        boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)'
+                    }}>
+                        📊 District View
+                    </span>
+                )}
+            </div>
             {dateFilter === 'week' && stats?.currentWeek && (
                 <h4 className="week-subtitle">Week {stats.currentWeek}</h4>
             )}
@@ -901,12 +931,26 @@ const Dashboard = () => {
                     cursor: pointer;
                     font-weight: 600;
                 }
-                .btn-back {
-                    background: #eee;
-                    border: none;
-                    padding: 6px 12px;
-                    border-radius: 4px;
-                    cursor: pointer;
+                .back-button {
+                  color: #667eea;
+                  font-size: 16px;
+                  font-weight: 600;
+                  background: transparent;
+                  border: 2px solid #667eea;
+                  padding: 8px 16px;
+                  border-radius: 6px;
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  transition: all 0.2s ease;
+                }
+                .back-button:hover {
+                  background: #667eea;
+                  color: white;
+                }
+                .back-button .icon {
+                    font-size: 20px;
                 }
                 .error-msg {
                     background: #f8d7da;

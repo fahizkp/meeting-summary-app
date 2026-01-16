@@ -989,4 +989,171 @@ button:disabled {
   button {
     display: none;
   }
+
+  /* Hide bottom navigation when printing */
+  nav[style*="position: fixed"][style*="bottom: 0"] {
+    display: none !important;
+  }
+}
+
+/* ======================================
+   Bottom Navigation Styles
+   ====================================== */
+/* Ensure smooth transitions for bottom nav */
+nav[style*="position: fixed"][style*="bottom: 0"] button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+nav[style*="position: fixed"][style*="bottom: 0"] button:hover {
+  background: var(--gray-50);
+  border-radius: 12px;
+}
+
+/* Mobile optimizations for bottom nav */
+@media (max-width: 640px) {
+  nav[style*="position: fixed"][style*="bottom: 0"] {
+    height: 65px !important;
+    padding: 0 8px !important;
+  }
+
+  nav[style*="position: fixed"][style*="bottom: 0"] button {
+    padding: 6px 8px !important;
+    min-width: 50px !important;
+  }
+}
+
+/* Safe area for devices with notches/home indicators */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  nav[style*="position: fixed"][style*="bottom: 0"] {
+    padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+    height: calc(70px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* ======================================
+   Anti-Gravity User Styles
+   ====================================== */
+
+/* Pulse animation for Anti-Gravity badge */
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+  }
+
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
+  }
+}
+
+/* Gradient shift animation for banners */
+@keyframes gradient-shift {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Glow animation */
+@keyframes glow {
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Anti-Gravity badge styling */
+.antigravity-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Power user banner for dashboards */
+.power-user-banner {
+  background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+  background-size: 200% 100%;
+  animation: gradient-shift 3s ease infinite;
+  color: white;
+  padding: 12px 20px;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Access badge in forms */
+.access-badge {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.access-badge.antigravity {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+  color: #667eea;
+  border: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+/* Special glow for anti-gravity accessible elements */
+.antigravity-accessible {
+  position: relative;
+}
+
+.antigravity-accessible::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0.5;
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Omnipotent badge for reports */
+.omnipotent-badge {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+  color: #667eea;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 2px solid rgba(102, 126, 234, 0.3);
 }

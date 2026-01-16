@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getZones, getAttendees, getAgendas, saveMeeting, getMeetingReport, updateMeeting, checkWeekMeeting } from '../services/api';
-import { getAccessibleZones, hasAnyRole } from '../services/auth';
+import { getAccessibleZones, hasAnyRole, getUser, getUserAccessConfig, hasRole } from '../services/auth';
 import { setZonesCache } from '../services/zoneHelper';
 import ZoneSelector from './ZoneSelector';
 import AttendeeList from './AttendeeList';
@@ -28,6 +28,17 @@ const buildQhlsRows = (units = []) => {
 const MeetingForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const user = getUser();
+  const accessConfig = getUserAccessConfig(user);
+
+  // Enforce access control
+  useEffect(() => {
+    if (!accessConfig.showFormTab) {
+      console.log('Access denied to MeetingForm, redirecting...', user?.roles);
+      navigate(accessConfig.defaultRoute, { replace: true });
+    }
+  }, [accessConfig, navigate, user]);
+
   const [zones, setZones] = useState([]);
   const [selectedZone, setSelectedZone] = useState('');
   const [selectedZoneName, setSelectedZoneName] = useState('');
@@ -86,11 +97,22 @@ const MeetingForm = () => {
 
           // Filter zones based on user access
           let filteredZones = allZones;
-          if (accessibleZoneIds !== null) {
-            // User has specific zone access (zone_admin)
-            filteredZones = allZones.filter(zone => accessibleZoneIds.includes(zone.id));
+          const userZoneAccess = user?.zoneAccess || [];
+
+          if (hasRole('admin', user)) {
+            // Admin sees all zones
+            filteredZones = allZones;
+          } else if (hasRole('zone_admin', user)) {
+            // Zone admin sees specifically assigned zones
+            filteredZones = allZones.filter(zone =>
+              userZoneAccess.includes(zone.zoneId) ||
+              userZoneAccess.includes(zone.id) ||
+              userZoneAccess.includes(zone.name)
+            );
+          } else {
+            // Others (like district_admin only) see no zones to create meetings for
+            filteredZones = [];
           }
-          // If accessibleZoneIds is null, user can see all zones (admin/district_admin)
 
           // Cache all zones for zone helper service
           setZonesCache(allZones);

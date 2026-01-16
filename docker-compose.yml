@@ -1,47 +1,52 @@
 services:
+  mongo:
+    image: mongo:7
+    container_name: meeting-summary-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - meeting-summary-internal
+    ports:
+      - "27017:27017"
+
   backend:
-    image: ghcr.io/wisdom-youth-mlpe/meeting-summary-backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.local
     container_name: meeting-summary-backend
     restart: unless-stopped
     env_file:
       - .env
     environment:
       - PORT=3001
-      - CORS_ORIGIN=https://meeting.wisdommlpe.site
+      - MONGODB_URI=mongodb://mongo:27017/meeting_app
+      - CORS_ORIGIN=http://localhost:5174
+    depends_on:
+      - mongo
     networks:
-      - web
       - meeting-summary-internal
-      - infra
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.meeting-summary-backend.rule=Host(`meeting.wisdommlpe.site`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.meeting-summary-backend.entrypoints=websecure"
-      - "traefik.http.routers.meeting-summary-backend.tls=true"
-      - "traefik.http.routers.meeting-summary-backend.tls.certresolver=myresolver"
-      - "traefik.http.services.meeting-summary-backend.loadbalancer.server.port=3001"
+    ports:
+      - "3001:3001"
 
   frontend:
-    image: ghcr.io/wisdom-youth-mlpe/meeting-summary-frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.local
     container_name: meeting-summary-frontend
     restart: unless-stopped
     depends_on:
       - backend
     networks:
-      - web
       - meeting-summary-internal
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=web"
-      - "traefik.http.routers.meeting-summary-frontend.rule=Host(`meeting.wisdommlpe.site`)"
-      - "traefik.http.routers.meeting-summary-frontend.entrypoints=websecure"
-      - "traefik.http.routers.meeting-summary-frontend.tls=true"
-      - "traefik.http.routers.meeting-summary-frontend.tls.certresolver=myresolver"
-      - "traefik.http.services.meeting-summary-frontend.loadbalancer.server.port=80"
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3001
 
 networks:
-  web:
-    external: true
-  infra:
-    external: true
   meeting-summary-internal:
+
+
+volumes:
+  mongo-data:

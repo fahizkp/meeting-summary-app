@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getAllMeetings, getMeetingReport, deleteMeeting } from '../services/api';
-import { getAccessibleZones, canEditMeetings, hasAnyRole, getUser } from '../services/auth';
+import { getAccessibleZones, canEditMeetings, hasAnyRole, getUser, hasRole } from '../services/auth';
 import { filterMeetingsByZoneAccess } from '../services/zoneHelper';
 
 const MeetingReport = () => {
@@ -14,9 +14,18 @@ const MeetingReport = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check if user can edit meetings
-  const userCanEdit = canEditMeetings();
+  const user = getUser();
   const accessibleZones = getAccessibleZones();
+
+  const canEdit = (meeting) => {
+    if (!user || !meeting) return false;
+    if (hasRole('admin', user)) return true;
+    if (hasRole('zone_admin', user)) {
+      const userZoneAccess = user.zoneAccess || [];
+      return userZoneAccess.includes(meeting.zoneId) || userZoneAccess.includes(meeting.zoneName);
+    }
+    return false;
+  };
 
   useEffect(() => {
     fetchMeetings();
@@ -35,20 +44,28 @@ const MeetingReport = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await getAllMeetings();
-      if (response.success) {
-        const allMeetings = response.meetings || [];
-        const accessibleZoneIds = getAccessibleZones();
+      // If district_admin (not admin), filter by districtAccess
+      const isDistrictAdmin = hasRole('district_admin', user) && !hasRole('admin', user);
+      const districts = isDistrictAdmin ? user.districtAccess?.join(',') : null;
 
-        // Filter meetings based on user's zone access using zone helper
-        const filteredMeetings = filterMeetingsByZoneAccess(allMeetings, accessibleZoneIds);
+      const response = await getAllMeetings(districts);
+      if (response.success) {
+        let filteredMeetings = response.meetings || [];
+
+        // Final frontend filtering as a secondary check
+        if (!hasRole('admin', user) && !isDistrictAdmin && hasRole('zone_admin', user)) {
+          const userZoneAccess = user.zoneAccess || [];
+          filteredMeetings = filteredMeetings.filter(m =>
+            userZoneAccess.includes(m.zoneId) || userZoneAccess.includes(m.zoneName)
+          );
+        }
 
         setMeetings(filteredMeetings);
       } else {
-        setError('മീറ്റിംഗുകൾ ലഭിക്കുന്നതിൽ പിശക് (Error fetching meetings)');
+        setError('മീറ്റിംഗ് ലിസ്റ്റ് ലഭിക്കുന്നതിൽ പിശക്');
       }
     } catch (err) {
-      setError('മീറ്റിംഗുകൾ ലഭിക്കുന്നതിൽ പിശക് (Error fetching meetings): ' + err.message);
+      setError('മീറ്റിംഗ് ലിസ്റ്റ് ലഭിക്കുന്നതിൽ പിശക്: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -318,8 +335,8 @@ ${adhyakshanLine ? adhyakshanLine + '\n' : ''}
                           >
                             View
                           </button>
-                          {/* Only show edit/delete buttons if user can edit meetings */}
-                          {userCanEdit && (
+                          {/* Only show edit/delete buttons if user can edit this specific meeting */}
+                          {canEdit(meeting) && (
                             <>
                               <button
                                 onClick={() => handleEdit(meeting.meetingId)}

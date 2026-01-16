@@ -3,6 +3,7 @@ const router = express.Router();
 const { authenticate } = require('../middleware/auth');
 const { isMongoConnected } = require('../config/mongodb');
 const mongoService = require('../services/mongoService');
+const { hasZoneAccess, getAccessibleZones } = require('../middleware/checkZoneAccess');
 
 // Apply authentication middleware to all routes except debug
 router.use((req, res, next) => {
@@ -13,6 +14,47 @@ router.use((req, res, next) => {
   // Apply auth middleware to all other routes
   authenticate(req, res, next);
 });
+
+// Middleware to check if user can create meetings
+const canCreateMeeting = (req, res, next) => {
+  const { roles } = req.user;
+  if (roles.includes('admin') || roles.includes('zone_admin')) {
+    return next();
+  }
+  return res.status(403).json({ 
+    success: false, 
+    error: 'Access denied', 
+    message: 'Only zone admins and admins can create meetings' 
+  });
+};
+
+// Middleware to check if user can edit/delete a specific meeting
+const canEditMeeting = async (req, res, next) => {
+  try {
+    const { meetingId } = req.params;
+    const { roles, zoneAccess } = req.user;
+    
+    if (roles.includes('admin')) return next();
+    
+    const meeting = await mongoService.getMeetingById(meetingId);
+    if (!meeting) {
+      return res.status(404).json({ success: false, error: 'Meeting not found' });
+    }
+    
+    if (roles.includes('zone_admin') && zoneAccess.includes(meeting.zoneId)) {
+      return next();
+    }
+    
+    return res.status(403).json({ 
+      success: false, 
+      error: 'Access denied', 
+      message: 'You do not have permission to modify this meeting' 
+    });
+  } catch (error) {
+    console.error('Error in canEditMeeting middleware:', error);
+    res.status(500).json({ success: false, error: 'Server error check permissions' });
+  }
+};
 
 /**
  * GET /api/debug/env
@@ -31,7 +73,7 @@ router.get('/debug/env', (req, res) => {
 
 /**
  * GET /api/zones
- * Fetch all available zones from MongoDB
+ * Fetch available zones from MongoDB based on user access
  */
 router.get('/zones', async (req, res) => {
   try {
@@ -44,7 +86,23 @@ router.get('/zones', async (req, res) => {
     }
 
     console.log('[API] Fetching zones from MongoDB');
-    const zones = await mongoService.getZones();
+    const allZones = await mongoService.getZones();
+    
+    // Get accessible zones for the user
+    const accessibleZones = getAccessibleZones(req.user);
+    
+    // Filter zones based on user access
+    let zones = allZones;
+    
+    // Check for districts query param
+    const districtsParam = req.query.districts;
+    if (districtsParam) {
+      const districtsList = districtsParam.split(',');
+      zones = zones.filter(zone => districtsList.includes(zone.districtId));
+    } else if (accessibleZones !== 'all') {
+      // Filter to only zones the user has access to
+      zones = allZones.filter(zone => accessibleZones.includes(zone.id));
+    }
     
     // Add units from MongoDB
     for (const zone of zones) {
@@ -52,7 +110,12 @@ router.get('/zones', async (req, res) => {
       zone.units = units;
     }
     
-    res.json({ success: true, zones, source: 'mongodb' });
+    res.json({ 
+      success: true, 
+      zones, 
+      source: 'mongodb',
+      isAdmin: accessibleZones === 'all'
+    });
   } catch (error) {
     console.error('Error in /api/zones:', error);
     res.status(500).json({
@@ -214,7 +277,7 @@ router.get('/meetings/check-week', async (req, res) => {
  * POST /api/meetings
  * Save meeting summary to MongoDB
  */
-router.post('/meetings', express.json(), async (req, res) => {
+router.post('/meetings', express.json(), canCreateMeeting, async (req, res) => {
   try {
     if (!isMongoConnected()) {
       return res.status(503).json({
@@ -226,6 +289,7 @@ router.post('/meetings', express.json(), async (req, res) => {
 
     const {
       zoneName,
+      zoneId,
       date,
       startTime,
       endTime,
@@ -253,8 +317,28 @@ router.post('/meetings', express.json(), async (req, res) => {
       });
     }
 
+    // Check zone access - get zoneId from zoneName if not provided
+    let targetZoneId = zoneId;
+    if (!targetZoneId) {
+      const allZones = await mongoService.getZones();
+      const zone = allZones.find(z => z.name === zoneName);
+      targetZoneId = zone ? zone.id : null;
+    }
+
+    // Verify user has access to this zone
+    if (targetZoneId && !hasZoneAccess(req.user, targetZoneId)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied',
+        message: 'You do not have permission to create meetings for this zone'
+      });
+    }
+
+    const { roles } = req.user;
+
     const result = await mongoService.saveMeeting({
       zoneName,
+      zoneId: targetZoneId,
       date,
       startTime,
       endTime,
@@ -284,7 +368,7 @@ router.post('/meetings', express.json(), async (req, res) => {
 
 /**
  * GET /api/meetings/list
- * Get all meetings from MongoDB
+ * Get meetings from MongoDB (filtered by user access)
  */
 router.get('/meetings/list', async (req, res) => {
   try {
@@ -297,7 +381,42 @@ router.get('/meetings/list', async (req, res) => {
     }
 
     console.log('[API] Fetching meetings from MongoDB');
-    const meetings = await mongoService.getAllMeetings();
+    let meetings = await mongoService.getAllMeetings();
+    
+    // Filter meetings based on user role and access
+    const user = req.user;
+    
+    // Admin sees all meetings
+    if (!user.roles || !user.roles.includes('admin')) {
+      const allZones = await mongoService.getZones();
+      
+      // Check for districts query param
+      const districtsParam = req.query.districts;
+      if (districtsParam) {
+        const districtsList = districtsParam.split(',');
+        const districtZones = allZones
+          .filter(z => districtsList.includes(z.districtId))
+          .map(z => z.name);
+        meetings = meetings.filter(m => districtZones.includes(m.zoneName));
+      }
+      // District admin - filter by district access
+      else if (user.roles && user.roles.includes('district_admin')) {
+        const districtZones = allZones
+          .filter(z => user.districtAccess && user.districtAccess.includes(z.districtId))
+          .map(z => z.name);
+        
+        meetings = meetings.filter(m => districtZones.includes(m.zoneName));
+      }
+      // Zone admin - filter by zone access
+      else if (user.roles && user.roles.includes('zone_admin')) {
+        const accessibleZoneNames = allZones
+          .filter(z => user.zoneAccess && user.zoneAccess.includes(z.id))
+          .map(z => z.name);
+        
+        meetings = meetings.filter(m => accessibleZoneNames.includes(m.zoneName));
+      }
+    }
+    
     res.json({ success: true, meetings });
   } catch (error) {
     console.error('Error in /api/meetings/list:', error);
@@ -313,7 +432,7 @@ router.get('/meetings/list', async (req, res) => {
  * DELETE /api/meetings/:meetingId
  * Delete a meeting from MongoDB
  */
-router.delete('/meetings/:meetingId', async (req, res) => {
+router.delete('/meetings/:meetingId', canEditMeeting, async (req, res) => {
   try {
     if (!isMongoConnected()) {
       return res.status(503).json({
@@ -324,14 +443,8 @@ router.delete('/meetings/:meetingId', async (req, res) => {
     }
 
     const { meetingId } = req.params;
+    
     const result = await mongoService.deleteMeeting(meetingId);
-
-    if (!result) {
-      return res.status(404).json({
-        success: false,
-        error: 'Meeting not found',
-      });
-    }
 
     res.json({
       success: true,
@@ -352,7 +465,7 @@ router.delete('/meetings/:meetingId', async (req, res) => {
  * PUT /api/meetings/:meetingId
  * Update a meeting in MongoDB
  */
-router.put('/meetings/:meetingId', express.json(), async (req, res) => {
+router.put('/meetings/:meetingId', express.json(), canEditMeeting, async (req, res) => {
   try {
     if (!isMongoConnected()) {
       return res.status(503).json({
@@ -392,7 +505,7 @@ router.put('/meetings/:meetingId', express.json(), async (req, res) => {
         message: 'Minutes and attendance must be arrays',
       });
     }
-
+    
     const result = await mongoService.updateMeeting(meetingId, {
       zoneName,
       date,
@@ -406,13 +519,6 @@ router.put('/meetings/:meetingId', express.json(), async (req, res) => {
       adhyakshan: adhyakshan || '',
       nandhi: nandhi || '',
     });
-
-    if (!result) {
-      return res.status(404).json({
-        success: false,
-        error: 'Meeting not found',
-      });
-    }
 
     res.json({
       success: true,
@@ -562,15 +668,31 @@ router.get('/dashboard/stats', async (req, res) => {
     const meetings = await mongoService.getMeetingsByDateRange(startDate, endDate);
     
     // 2. Fetch all zones
-    const allZones = await mongoService.getZones();
+    let allZones = await mongoService.getZones();
+    
+    // Filter zones based on user access
+    const user = req.user;
+    if (!user.roles.includes('admin')) {
+      if (user.roles.includes('district_admin')) {
+        // District admin - filter by districtAccess
+        allZones = allZones.filter(z => user.districtAccess && user.districtAccess.includes(z.districtId));
+      } else if (user.roles.includes('zone_admin')) {
+        // Zone admin - filter by zoneAccess
+        allZones = allZones.filter(z => user.zoneAccess && user.zoneAccess.includes(z.id));
+      }
+    }
+
     const zoneNames = allZones.map(z => z.name);
 
-    // Filter by Zone if provided
+    // Filter by Zone if provided, OR filter by accessible zones if not admin
     let filteredMeetings = meetings;
     if (zoneId && zoneId !== 'All') {
       console.log(`[API] Filtering details for zone: "${zoneId}"`);
       filteredMeetings = meetings.filter(m => (m.zoneName || '').trim() === zoneId.trim());
       console.log(`[API] Found ${filteredMeetings.length} meetings for zone "${zoneId}"`);
+    } else if (!user.roles.includes('admin')) {
+      // For 'All' view, restrict to accessible zones
+      filteredMeetings = meetings.filter(m => zoneNames.includes(m.zoneName));
     }
 
     // Count meetings per zone

@@ -22,6 +22,16 @@ const userSchema = new mongoose.Schema({
   districtAccess: [{
     type: String, // District IDs (for future multi-district)
   }],
+  isAntiGravity: {
+    type: Boolean,
+    default: false,
+    // When true, this user has COMPLETE UNRESTRICTED ACCESS:
+    // - All zones in all districts
+    // - All meetings (create, edit, delete)
+    // - All admin functions
+    // - All dashboard data
+    // Grant only to trusted administrators!
+  },
 }, {
   timestamps: true,
 });

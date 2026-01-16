@@ -68,10 +68,10 @@ const AttendanceSummary = ({ zoneId, startDate, endDate }) => {
 
     const getStatusLabel = (status) => {
         switch (status) {
-            case 'P': return 'P';
-            case 'L': return 'L';
-            case 'A': return 'A';
-            default: return '-';
+            case 'P': return '✓';
+            case 'L': return '–';
+            case 'A': return '✗';
+            default: return '–';
         }
     };
 
@@ -80,9 +80,10 @@ const AttendanceSummary = ({ zoneId, startDate, endDate }) => {
             <div className="summary-header">
                 <h3>Attendance Summary - {zoneName}</h3>
                 <div className="legend">
-                    <span className="legend-item"><span className="status-dot status-present"></span> Present (P)</span>
-                    <span className="legend-item"><span className="status-dot status-leave"></span> Leave (L)</span>
-                    <span className="legend-item"><span className="status-dot status-absent"></span> Absent (A)</span>
+                    <span className="legend-item"><span className="legend-box status-present">✓</span> Present</span>
+                    <span className="legend-item"><span className="legend-box status-leave">–</span> Leave</span>
+                    <span className="legend-item"><span className="legend-box status-absent">✗</span> Absent</span>
+                    <span className="legend-item"><span className="legend-box status-none">–</span> No Data</span>
                 </div>
             </div>
 
@@ -156,27 +157,21 @@ const AttendanceSummary = ({ zoneId, startDate, endDate }) => {
                 .legend-item {
                     display: flex;
                     align-items: center;
-                    gap: 6px;
-                    font-size: 0.85rem;
-                    color: #666;
+                    gap: 8px;
+                    font-size: 0.9rem;
+                    color: #555;
+                    font-weight: 500;
                 }
 
-                .status-dot {
-                    width: 12px;
-                    height: 12px;
-                    border-radius: 50%;
-                }
-
-                .status-dot.status-present {
-                    background: #27ae60;
-                }
-
-                .status-dot.status-leave {
-                    background: #f39c12;
-                }
-
-                .status-dot.status-absent {
-                    background: #e74c3c;
+                .legend-box {
+                    width: 24px;
+                    height: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 4px;
+                    font-weight: bold;
+                    font-size: 14px;
                 }
 
                 .attendance-summary-placeholder,
@@ -252,23 +247,31 @@ const AttendanceSummary = ({ zoneId, startDate, endDate }) => {
                 }
 
                 .status-present {
-                    background: #d4edda;
-                    color: #155724;
+                    background: #d4edda !important;
+                    color: #155724 !important;
                 }
 
                 .status-leave {
-                    background: #fff3cd;
-                    color: #856404;
+                    background: #fff3cd !important;
+                    color: #856404 !important;
                 }
 
                 .status-absent {
-                    background: #f8d7da;
-                    color: #721c24;
+                    background: #f8d7da !important;
+                    color: #721c24 !important;
                 }
 
                 .status-none {
-                    background: #f8f9fa;
-                    color: #aaa;
+                    background: #e9ecef !important;
+                    color: #6c757d !important;
+                }
+
+                .attendance-table td {
+                    padding: 12px 8px;
+                    text-align: center;
+                    border: 1px solid #dee2e6;
+                    font-weight: 600;
+                    font-size: 1.1rem;
                 }
 
                 .percentage-badge {

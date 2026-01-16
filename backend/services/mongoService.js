@@ -106,9 +106,11 @@ class MongoService {
   // ==================== USERS ====================
 
   async getUserByUsername(username) {
+    console.log(`[MongoService] Finding user: "${username.toLowerCase()}"`);
     const user = await User.findOne({ 
       username: username.toLowerCase() 
     });
+    console.log(`[MongoService] Found user:`, user ? user.username : 'null');
     
     if (!user) return null;
     
@@ -118,6 +120,7 @@ class MongoService {
       roles: user.roles || [],
       zoneAccess: user.zoneAccess || [],
       districtAccess: user.districtAccess || [],
+      isAntiGravity: user.isAntiGravity || false,
       createdDate: user.createdAt?.toISOString() || '',
     };
   }
@@ -153,6 +156,7 @@ class MongoService {
       roles: u.roles || [],
       zoneAccess: u.zoneAccess || [],
       districtAccess: u.districtAccess || [],
+      isAntiGravity: u.isAntiGravity || false,
       createdDate: u.createdAt?.toISOString() || '',
     }));
   }

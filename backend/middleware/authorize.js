@@ -1,10 +1,15 @@
 /**
  * Authorization Middleware
  * Provides role-based and zone-based access control
+ * 
+ * Anti-Gravity users have COMPLETE UNRESTRICTED ACCESS and bypass all checks.
  */
+
+const { isAntiGravityUser, logAntiGravityAction } = require('../utils/antiGravity');
 
 /**
  * Check if user has a specific role
+ * Anti-Gravity users bypass this check
  * @param {string} requiredRole - Role to check for
  */
 const requireRole = (requiredRole) => {
@@ -17,6 +22,13 @@ const requireRole = (requiredRole) => {
         error: 'Unauthorized',
         message: 'Authentication required',
       });
+    }
+
+    // Anti-Gravity users bypass all role checks
+    if (isAntiGravityUser(user)) {
+      req.isAntiGravity = true;
+      logAntiGravityAction(user, 'ROLE_CHECK_BYPASS', { requiredRole });
+      return next();
     }
 
     const userRoles = Array.isArray(user.roles) ? user.roles : [];
@@ -35,6 +47,7 @@ const requireRole = (requiredRole) => {
 
 /**
  * Check if user has any of the specified roles
+ * Anti-Gravity users bypass this check
  * @param {string[]} allowedRoles - Array of roles to check
  */
 const requireAnyRole = (allowedRoles) => {
@@ -47,6 +60,13 @@ const requireAnyRole = (allowedRoles) => {
         error: 'Unauthorized',
         message: 'Authentication required',
       });
+    }
+
+    // Anti-Gravity users bypass all role checks
+    if (isAntiGravityUser(user)) {
+      req.isAntiGravity = true;
+      logAntiGravityAction(user, 'ANY_ROLE_CHECK_BYPASS', { allowedRoles });
+      return next();
     }
 
     const userRoles = Array.isArray(user.roles) ? user.roles : [];
@@ -66,6 +86,7 @@ const requireAnyRole = (allowedRoles) => {
 
 /**
  * Check if user can access a specific zone
+ * Anti-Gravity users bypass this check
  * @param {string} zoneIdParam - Name of the request parameter containing zone ID
  */
 const requireZoneAccess = (zoneIdParam = 'zoneId') => {
@@ -78,6 +99,14 @@ const requireZoneAccess = (zoneIdParam = 'zoneId') => {
         error: 'Unauthorized',
         message: 'Authentication required',
       });
+    }
+
+    // Anti-Gravity users bypass all zone access checks
+    if (isAntiGravityUser(user)) {
+      req.isAntiGravity = true;
+      const zoneId = req.params[zoneIdParam] || req.body[zoneIdParam] || req.query[zoneIdParam];
+      logAntiGravityAction(user, 'ZONE_ACCESS_BYPASS', { zoneId });
+      return next();
     }
 
     const userRoles = Array.isArray(user.roles) ? user.roles : [];
@@ -122,6 +151,7 @@ const requireZoneAccess = (zoneIdParam = 'zoneId') => {
 
 /**
  * Check if user can edit a meeting
+ * Anti-Gravity users bypass this check and can edit any meeting
  * Middleware that checks meeting ownership
  */
 const canEditMeeting = () => {
@@ -134,6 +164,13 @@ const canEditMeeting = () => {
         error: 'Unauthorized',
         message: 'Authentication required',
       });
+    }
+
+    // Anti-Gravity users can edit any meeting
+    if (isAntiGravityUser(user)) {
+      req.isAntiGravity = true;
+      logAntiGravityAction(user, 'CAN_EDIT_MEETING_BYPASS', { meetingId: req.params.meetingId });
+      return next();
     }
 
     const userRoles = Array.isArray(user.roles) ? user.roles : [];
@@ -170,6 +207,7 @@ const canEditMeeting = () => {
 
 /**
  * Filter zones based on user access
+ * Anti-Gravity users get access to all zones
  * Adds filtered zones to req.accessibleZones
  */
 const filterZoneAccess = () => {
@@ -182,6 +220,13 @@ const filterZoneAccess = () => {
         error: 'Unauthorized',
         message: 'Authentication required',
       });
+    }
+
+    // Anti-Gravity users have access to all zones
+    if (isAntiGravityUser(user)) {
+      req.isAntiGravity = true;
+      req.accessibleZones = null; // null means all zones
+      return next();
     }
 
     const userRoles = Array.isArray(user.roles) ? user.roles : [];
@@ -204,10 +249,29 @@ const filterZoneAccess = () => {
   };
 };
 
+/**
+ * Middleware to allow Anti-Gravity users to bypass all subsequent checks
+ * Use this early in the middleware chain for protected routes
+ */
+const allowAntiGravity = () => {
+  return (req, res, next) => {
+    const user = req.user;
+    
+    if (user && isAntiGravityUser(user)) {
+      req.isAntiGravity = true;
+      // Don't log here to avoid excessive logging - individual checks log themselves
+    }
+    
+    next();
+  };
+};
+
 module.exports = {
   requireRole,
   requireAnyRole,
   requireZoneAccess,
   canEditMeeting,
   filterZoneAccess,
+  allowAntiGravity,
+  isAntiGravityUser,
 };

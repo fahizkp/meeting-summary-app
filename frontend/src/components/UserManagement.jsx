@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getUser, getToken } from '../services/auth';
+import { getUser, getToken, isAntiGravityUser as checkIsAntiGravity } from '../services/auth';
 import { getZones } from '../services/api';
 import * as userApi from '../services/userApi';
 import axios from 'axios';
@@ -17,8 +17,9 @@ const UserManagement = () => {
     const [fetchError, setFetchError] = useState(null);
     const formRef = React.useRef(null);
 
-    // Role priority: 1 = highest
+    // Role priority: 1 = highest, 0 = Anti-Gravity (highest)
     const ROLE_PRIORITY = {
+        antigravity: 0,
         admin: 1,
         district_admin: 2,
         zone_admin: 3,
@@ -34,21 +35,36 @@ const UserManagement = () => {
         admin: { bg: '#dc3545', color: 'white' }, // Red
         district_admin: { bg: '#0d6efd', color: 'white' }, // Blue
         zone_admin: { bg: '#28a745', color: 'white' }, // Green
+        antigravity: { bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }, // Purple gradient
     };
 
-    // Get highest priority role for a user
-    const getHighestRole = (roles) => {
-        if (!roles || roles.length === 0) return null;
+    // Check if a user is Anti-Gravity
+    const isAntiGravity = (user) => {
+        if (!user) return false;
+        if (user.isAntiGravity) return true;
+        const roles = user.roles || [];
+        return roles.includes('admin') && roles.includes('district_admin') && roles.includes('zone_admin');
+    };
+
+    // Get highest priority role for a user (Anti-Gravity is highest)
+    const getHighestRole = (user) => {
+        if (isAntiGravity(user)) return 'antigravity';
+        const roles = user?.roles || [];
+        if (roles.length === 0) return null;
         return roles.reduce((highest, role) => {
             if (!highest) return role;
             return ROLE_PRIORITY[role] < ROLE_PRIORITY[highest] ? role : highest;
         }, null);
     };
 
-    // Sort users by role priority
+    // Sort users by role priority (Anti-Gravity first, then by role priority)
     const sortedUsers = [...users].sort((a, b) => {
-        const aHighest = getHighestRole(a.roles);
-        const bHighest = getHighestRole(b.roles);
+        const aIsAntiGravity = isAntiGravity(a);
+        const bIsAntiGravity = isAntiGravity(b);
+        if (aIsAntiGravity && !bIsAntiGravity) return -1;
+        if (!aIsAntiGravity && bIsAntiGravity) return 1;
+        const aHighest = getHighestRole(a);
+        const bHighest = getHighestRole(b);
         return (ROLE_PRIORITY[aHighest] || 99) - (ROLE_PRIORITY[bHighest] || 99);
     });
 
@@ -521,13 +537,43 @@ const UserManagement = () => {
                         ) : (
                             sortedUsers.map((user, index) => (
                                 <tr key={user.username} style={{
-                                    backgroundColor: index % 2 === 0 ? 'white' : '#f9f9f9',
+                                    backgroundColor: isAntiGravity(user) ? 'rgba(102, 126, 234, 0.05)' : (index % 2 === 0 ? 'white' : '#f9f9f9'),
                                     borderBottom: '1px solid #eee',
+                                    borderLeft: isAntiGravity(user) ? '3px solid #667eea' : 'none',
                                 }}>
-                                    <td style={{ padding: '12px', fontWeight: '600' }}>{user.username}</td>
+                                    <td style={{ padding: '12px', fontWeight: '600' }}>
+                                        {user.username}
+                                        {isAntiGravity(user) && (
+                                            <span style={{
+                                                marginLeft: '8px',
+                                                fontSize: '10px',
+                                                fontWeight: '700',
+                                                padding: '2px 6px',
+                                                borderRadius: '4px',
+                                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                color: 'white',
+                                            }}>
+                                                ⚡
+                                            </span>
+                                        )}
+                                    </td>
                                     <td style={{ padding: '12px' }}>
                                         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                            {user.roles?.sort((a, b) => ROLE_PRIORITY[a] - ROLE_PRIORITY[b]).map(role => (
+                                            {isAntiGravity(user) && (
+                                                <span
+                                                    style={{
+                                                        padding: '4px 10px',
+                                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                        color: 'white',
+                                                        borderRadius: '12px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '700',
+                                                    }}
+                                                >
+                                                    ⚡ Anti-Gravity
+                                                </span>
+                                            )}
+                                            {!isAntiGravity(user) && user.roles?.sort((a, b) => ROLE_PRIORITY[a] - ROLE_PRIORITY[b]).map(role => (
                                                 <span
                                                     key={role}
                                                     style={{
@@ -541,11 +587,23 @@ const UserManagement = () => {
                                                 >
                                                     {ROLE_LABELS[role] || role}
                                                 </span>
-                                            )) || '-'}
+                                            ))}
+                                            {!isAntiGravity(user) && (!user.roles || user.roles.length === 0) && '-'}
                                         </div>
                                     </td>
                                     <td style={{ padding: '12px' }}>
-                                        {user.zoneAccess?.length > 0 ? (
+                                        {isAntiGravity(user) || user.zoneAccess?.includes('ALL') ? (
+                                            <span style={{
+                                                padding: '4px 10px',
+                                                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2))',
+                                                borderRadius: '12px',
+                                                fontSize: '12px',
+                                                fontWeight: '600',
+                                                color: '#667eea',
+                                            }}>
+                                                ✓ All Zones
+                                            </span>
+                                        ) : user.zoneAccess?.length > 0 ? (
                                             <span style={{
                                                 padding: '4px 10px',
                                                 backgroundColor: '#e9ecef',

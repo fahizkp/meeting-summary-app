@@ -40,8 +40,9 @@ api.interceptors.response.use(
   }
 );
 
-export const getZones = async () => {
-  const response = await api.get('/api/zones');
+export const getZones = async (districts = null) => {
+  const params = districts ? { districts } : {};
+  const response = await api.get('/api/zones', { params });
   return response.data;
 };
 
@@ -65,8 +66,9 @@ export const getMeetingReport = async (meetingId) => {
   return response.data;
 };
 
-export const getAllMeetings = async () => {
-  const response = await api.get('/api/meetings/list');
+export const getAllMeetings = async (districts = null) => {
+  const params = districts ? { districts } : {};
+  const response = await api.get('/api/meetings/list', { params });
   return response.data;
 };
 

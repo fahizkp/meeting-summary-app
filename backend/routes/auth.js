@@ -51,10 +51,15 @@ router.post('/login', express.json(), async (req, res) => {
         username: user.username,
         roles: user.roles || [],
         zoneAccess: user.zoneAccess || [],
+        districtAccess: user.districtAccess || [],
+        isAntiGravity: user.isAntiGravity || false,
       },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRY }
     );
+
+    // Debug: Log user roles and Anti-Gravity status
+    console.log('[AUTH] User logged in:', user.username, 'Roles:', user.roles, 'AntiGravity:', user.isAntiGravity || false);
 
     res.json({
       success: true,
@@ -65,6 +70,8 @@ router.post('/login', express.json(), async (req, res) => {
           username: user.username,
           roles: user.roles || [],
           zoneAccess: user.zoneAccess || [],
+          districtAccess: user.districtAccess || [],
+          isAntiGravity: user.isAntiGravity || false,
         },
       },
     });
