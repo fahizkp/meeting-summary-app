@@ -11,9 +11,7 @@ services:
       - "27017:27017"
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.local
+    image: ghcr.io/wisdom-youth-mlpe/meeting-summary-backend:latest
     container_name: meeting-summary-backend
     restart: unless-stopped
     env_file:
@@ -21,7 +19,7 @@ services:
     environment:
       - PORT=3001
       - MONGODB_URI=mongodb://mongo:27017/meeting_app
-      - CORS_ORIGIN=http://localhost:5174
+      - CORS_ORIGIN=https://meeting.wisdommlpe.site
     depends_on:
       - mongo
     networks:
@@ -30,9 +28,7 @@ services:
       - "3001:3001"
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.local
+    image: ghcr.io/wisdom-youth-mlpe/meeting-summary-frontend:latest
     container_name: meeting-summary-frontend
     restart: unless-stopped
     depends_on:
@@ -40,9 +36,9 @@ services:
     networks:
       - meeting-summary-internal
     ports:
-      - "5173:5173"
+      - "5173:80"
     environment:
-      - VITE_API_URL=http://localhost:3001
+      - VITE_API_URL=https://meeting.wisdommlpe.site
 
 networks:
   meeting-summary-internal:
