@@ -21,6 +21,7 @@ on:
       - main
       - master
       - feature/migration
+      - feature/claude-prompt
 
 env:
   REGISTRY: ghcr.io
