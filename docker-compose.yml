@@ -19,7 +19,6 @@ services:
       - .env
     environment:
       - PORT=3001
-      - MONGODB_URI=mongodb://mongo:27017/meeting_app
       - CORS_ORIGIN=https://meeting.wisdommlpe.site
     depends_on:
       - mongo
