@@ -5,13 +5,6 @@ const { requireRole } = require('../middleware/authorize');
 const { isMongoConnected } = require('../config/mongodb');
 const mongoService = require('../services/mongoService');
 
-let googleSheetsService;
-try {
-  googleSheetsService = require('../services/googleSheets');
-} catch (error) {
-  console.error('Failed to initialize Google Sheets service:', error.message);
-}
-
 // All routes require authentication and admin role
 router.use(authenticate);
 router.use(requireRole('admin'));
@@ -22,27 +15,17 @@ router.use(requireRole('admin'));
  */
 router.get('/', async (req, res) => {
   try {
-    let users;
-
-    // Try MongoDB first
-    if (isMongoConnected()) {
-      console.log('[API] Fetching users from MongoDB');
-      users = await mongoService.getAllUsers();
-      return res.json({ success: true, users, source: 'mongodb' });
-    }
-
-    // Fallback to Google Sheets
-    if (!googleSheetsService) {
-      return res.status(500).json({
+    if (!isMongoConnected()) {
+      return res.status(503).json({
         success: false,
-        error: 'No data source available',
+        error: 'Database not available',
+        message: 'MongoDB is not connected',
       });
     }
 
-    console.log('[API] Fetching users from Google Sheets');
-    // TODO: Implement getAllUsers in googleSheets service
-    users = [];
-    res.json({ success: true, users, source: 'sheets' });
+    console.log('[API] Fetching users from MongoDB');
+    const users = await mongoService.getAllUsers();
+    res.json({ success: true, users });
   } catch (error) {
     console.error('Error in GET /api/users:', error);
     res.status(500).json({
@@ -100,45 +83,42 @@ router.post('/', express.json(), async (req, res) => {
       }
     }
 
-    // Try MongoDB first
-    if (isMongoConnected()) {
-      console.log('[API] Creating user in MongoDB');
-      
-      // Check if user already exists
-      const existingUser = await mongoService.getUserByUsername(username);
-      if (existingUser) {
-        return res.status(409).json({
-          success: false,
-          error: 'User already exists',
-          message: `User ${username} already exists`,
-        });
-      }
-
-      const user = await mongoService.createUser({
-        username,
-        password, // TODO: Hash password
-        roles,
-        zoneAccess: zoneAccess || [],
-        districtAccess: ['D001'], // Default district
-      });
-
-      return res.json({
-        success: true,
-        message: 'User created successfully',
-        user: {
-          username: user.username,
-          roles: user.roles,
-          zoneAccess: user.zoneAccess,
-        },
+    if (!isMongoConnected()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database not available',
+        message: 'MongoDB is not connected',
       });
     }
 
-    // Fallback to Google Sheets
-    // TODO: Implement user creation in Google Sheets
-    return res.status(501).json({
-      success: false,
-      error: 'Not implemented',
-      message: 'User creation in Google Sheets not yet implemented',
+    console.log('[API] Creating user in MongoDB');
+    
+    // Check if user already exists
+    const existingUser = await mongoService.getUserByUsername(username);
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        error: 'User already exists',
+        message: `User ${username} already exists`,
+      });
+    }
+
+    const user = await mongoService.createUser({
+      username,
+      password, // TODO: Hash password
+      roles,
+      zoneAccess: zoneAccess || [],
+      districtAccess: ['D001'], // Default district
+    });
+
+    return res.json({
+      success: true,
+      message: 'User created successfully',
+      user: {
+        username: user.username,
+        roles: user.roles,
+        zoneAccess: user.zoneAccess,
+      },
     });
   } catch (error) {
     console.error('Error in POST /api/users:', error);
@@ -190,49 +170,46 @@ router.put('/:username', express.json(), async (req, res) => {
       }
     }
 
-    // Try MongoDB first
-    if (isMongoConnected()) {
-      console.log('[API] Updating user in MongoDB');
-
-      // Check if user exists
-      const existingUser = await mongoService.getUserByUsername(username);
-      if (!existingUser) {
-        return res.status(404).json({
-          success: false,
-          error: 'User not found',
-          message: `User ${username} not found`,
-        });
-      }
-
-      const updateData = {
-        roles,
-        zoneAccess: zoneAccess || [],
-      };
-
-      // Only update password if provided
-      if (password && password.trim() !== '') {
-        updateData.password = password; // TODO: Hash password
-      }
-
-      const user = await mongoService.updateUser(username, updateData);
-
-      return res.json({
-        success: true,
-        message: 'User updated successfully',
-        user: {
-          username: user.username,
-          roles: user.roles,
-          zoneAccess: user.zoneAccess,
-        },
+    if (!isMongoConnected()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database not available',
+        message: 'MongoDB is not connected',
       });
     }
 
-    // Fallback to Google Sheets
-    // TODO: Implement user update in Google Sheets
-    return res.status(501).json({
-      success: false,
-      error: 'Not implemented',
-      message: 'User update in Google Sheets not yet implemented',
+    console.log('[API] Updating user in MongoDB');
+
+    // Check if user exists
+    const existingUser = await mongoService.getUserByUsername(username);
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found',
+        message: `User ${username} not found`,
+      });
+    }
+
+    const updateData = {
+      roles,
+      zoneAccess: zoneAccess || [],
+    };
+
+    // Only update password if provided
+    if (password && password.trim() !== '') {
+      updateData.password = password; // TODO: Hash password
+    }
+
+    const user = await mongoService.updateUser(username, updateData);
+
+    return res.json({
+      success: true,
+      message: 'User updated successfully',
+      user: {
+        username: user.username,
+        roles: user.roles,
+        zoneAccess: user.zoneAccess,
+      },
     });
   } catch (error) {
     console.error('Error in PUT /api/users/:username:', error);
@@ -261,33 +238,30 @@ router.delete('/:username', async (req, res) => {
       });
     }
 
-    // Try MongoDB first
-    if (isMongoConnected()) {
-      console.log('[API] Deleting user from MongoDB');
-
-      const User = require('../models/User');
-      const result = await User.findOneAndDelete({ username: username.toLowerCase() });
-
-      if (!result) {
-        return res.status(404).json({
-          success: false,
-          error: 'User not found',
-          message: `User ${username} not found`,
-        });
-      }
-
-      return res.json({
-        success: true,
-        message: 'User deleted successfully',
+    if (!isMongoConnected()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database not available',
+        message: 'MongoDB is not connected',
       });
     }
 
-    // Fallback to Google Sheets
-    // TODO: Implement user deletion in Google Sheets
-    return res.status(501).json({
-      success: false,
-      error: 'Not implemented',
-      message: 'User deletion in Google Sheets not yet implemented',
+    console.log('[API] Deleting user from MongoDB');
+
+    const User = require('../models/User');
+    const result = await User.findOneAndDelete({ username: username.toLowerCase() });
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found',
+        message: `User ${username} not found`,
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: 'User deleted successfully',
     });
   } catch (error) {
     console.error('Error in DELETE /api/users/:username:', error);

@@ -1,26 +1,25 @@
-const googleSheetsService = require('./googleSheets');
 const mongoService = require('./mongoService');
 const { isMongoConnected } = require('../config/mongodb');
 
 class UserService {
   /**
-   * Get user by username
-   * Tries MongoDB first, falls back to Google Sheets
+   * Get user by username from MongoDB
    */
   async getUserByUsername(username) {
     try {
-      // Try MongoDB first if connected
-      if (isMongoConnected()) {
-        console.log('[UserService] Fetching user from MongoDB');
-        const user = await mongoService.getUserByUsername(username);
-        if (user) {
-          return user;
-        }
+      if (!isMongoConnected()) {
+        throw new Error('MongoDB is not connected');
       }
 
-      // Fallback to Google Sheets
-      console.log('[UserService] Fetching user from Google Sheets');
-      return await googleSheetsService.getUserByUsername(username);
+      console.log('[UserService] Fetching user from MongoDB');
+      const user = await mongoService.getUserByUsername(username);
+      
+      if (!user) {
+        console.log(`[UserService] User not found: ${username}`);
+        return null;
+      }
+
+      return user;
     } catch (error) {
       console.error('Error in getUserByUsername:', error);
       throw error;
