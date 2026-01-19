@@ -36,27 +36,29 @@ services:
     depends_on:
       - backend
     networks:
+      - web
       - meeting-summary-internal
-    ports:
-      - "5173:80"
     environment:
       - VITE_API_URL=https://meeting.wisdommlpe.site
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.sample-app.rule=Host(`meeting.wisdommlpe.site`)"
-      - "traefik.http.routers.sample-app.entrypoints=websecure"
-      - "traefik.http.routers.sample-app.tls=true"
-      - "traefik.http.routers.sample-app.tls.certresolver=myresolver"
-      - "traefik.http.services.sample-app.loadbalancer.server.port=80"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.meeting-summary.rule=Host(`meeting.wisdommlpe.site`)"
+      - "traefik.http.routers.meeting-summary.entrypoints=websecure"
+      - "traefik.http.routers.meeting-summary.tls=true"
+      - "traefik.http.routers.meeting-summary.tls.certresolver=myresolver"
+      - "traefik.http.services.meeting-summary.loadbalancer.server.port=80"
       # HTTP to HTTPS redirect
-      - "traefik.http.routers.sample-app-http.rule=Host(`meeting.wisdommlpe.site`)"
-      - "traefik.http.routers.sample-app-http.entrypoints=web"
-      - "traefik.http.routers.sample-app-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.meeting-summary-http.rule=Host(`meeting.wisdommlpe.site`)"
+      - "traefik.http.routers.meeting-summary-http.entrypoints=web"
+      - "traefik.http.routers.meeting-summary-http.middlewares=redirect-to-https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
 
 networks:
-  meeting-summary-internal:
+  web:
     external: true
+  meeting-summary-internal:
+    driver: bridge
   infra:
     external: true
 
