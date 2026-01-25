@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const AttendeeList = ({ attendees, attendance, onAttendanceChange, onAbsenceReasonChange, onAddExtraAttendee }) => {
+const AttendeeList = ({ attendees, attendance, onAttendanceChange, onAbsenceReasonChange, onAddExtraAttendee, onRemoveExtraAttendee }) => {
   const [extraName, setExtraName] = useState('');
   const [extraRole, setExtraRole] = useState('');
 
@@ -147,6 +147,20 @@ const AttendeeList = ({ attendees, attendance, onAttendanceChange, onAbsenceReas
       background: '#bdbdbd',
       cursor: 'not-allowed',
     },
+    removeButton: {
+      padding: '6px',
+      background: 'transparent',
+      border: 'none',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '6px',
+      transition: 'all 0.2s ease',
+      position: 'absolute',
+      top: '8px',
+      right: '8px',
+    },
   };
 
   if (!attendees || attendees.length === 0) {
@@ -176,8 +190,33 @@ const AttendeeList = ({ attendees, attendance, onAttendanceChange, onAbsenceReas
             style={{
               ...styles.attendeeCard,
               borderColor: isPresent ? '#55efc4' : isLeave ? '#fab1a0' : '#eeeeee',
+              position: 'relative',
             }}
           >
+            {attendee.isExtra && onRemoveExtraAttendee && (
+              <button
+                type="button"
+                onClick={() => onRemoveExtraAttendee(index)}
+                style={styles.removeButton}
+                aria-label={`${attendee.name} നീക്കം ചെയ്യുക`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#ff7675"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+              </button>
+            )}
             <div style={styles.attendeeName}>
               <span>{attendee.name}</span>
               {attendee.role && (

@@ -877,9 +877,14 @@ button:disabled {
 .report-container h2 {
   color: var(--primary);
   font-size: 1.2rem;
+  margin-top: var(--space-lg);
   margin-bottom: var(--space-md);
   padding-bottom: var(--space-sm);
   border-bottom: 2px solid var(--gray-200);
+}
+
+.report-container h2:first-of-type {
+  margin-top: 0;
 }
 
 /* ======================================

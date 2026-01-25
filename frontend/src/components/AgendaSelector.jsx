@@ -38,11 +38,12 @@ const AgendaSelector = ({ agendas, selectedAgendas, onAgendaAdd, onAgendaRemove 
       color: 'white',
       border: 'none',
       borderRadius: '12px',
-      fontSize: '1.2rem',
+      fontSize: '1.5rem',
       fontWeight: '700',
       cursor: 'pointer',
       transition: 'all 0.2s ease',
       minWidth: '56px',
+      lineHeight: '1',
     },
     addBtnDisabled: {
       background: '#bdbdbd',
@@ -129,6 +130,7 @@ const AgendaSelector = ({ agendas, selectedAgendas, onAgendaAdd, onAgendaRemove 
           style={{
             ...styles.addBtn,
             ...(selectedAgenda.trim() ? {} : styles.addBtnDisabled),
+            fontSize: window.innerWidth <= 640 ? '1.2rem' : '1.5rem',
           }}
           aria-label="അജണ്ട ചേർക്കുക"
         >

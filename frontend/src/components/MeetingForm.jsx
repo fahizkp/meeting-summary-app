@@ -509,8 +509,8 @@ const MeetingForm = () => {
   };
 
   const handleAddExtraAttendee = (newAttendee) => {
-    // Add to attendees list
-    setAttendees([...attendees, newAttendee]);
+    // Add to attendees list with isExtra flag
+    setAttendees([...attendees, { ...newAttendee, isExtra: true }]);
 
     // Initialize attendance for the new attendee
     const attendeeKey = `${newAttendee.name}_${newAttendee.role || ''}`;
@@ -521,6 +521,21 @@ const MeetingForm = () => {
         reason: '',
       },
     });
+  };
+
+  const handleRemoveExtraAttendee = (index) => {
+    const attendeeToRemove = attendees[index];
+    if (!attendeeToRemove.isExtra) return; // Only allow removing extra attendees
+
+    // Remove from attendees list
+    const newAttendees = attendees.filter((_, i) => i !== index);
+    setAttendees(newAttendees);
+
+    // Remove from attendance
+    const attendeeKey = `${attendeeToRemove.name}_${attendeeToRemove.role || ''}`;
+    const newAttendance = { ...attendance };
+    delete newAttendance[attendeeKey];
+    setAttendance(newAttendance);
   };
 
   const handleAgendaAdd = (agenda) => {
@@ -1193,6 +1208,7 @@ const MeetingForm = () => {
           onAttendanceChange={handleAttendanceChange}
           onAbsenceReasonChange={handleAbsenceReasonChange}
           onAddExtraAttendee={handleAddExtraAttendee}
+          onRemoveExtraAttendee={handleRemoveExtraAttendee}
         />
 
         <MeetingMinutes
