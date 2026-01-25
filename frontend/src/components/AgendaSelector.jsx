@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 const AgendaSelector = ({ agendas, selectedAgendas, onAgendaAdd, onAgendaRemove }) => {
   const [selectedAgenda, setSelectedAgenda] = useState('');
+  const [resetKey, setResetKey] = useState(0);
 
   const handleAddAgenda = () => {
     const agendaValue = selectedAgenda.trim();
@@ -9,6 +10,7 @@ const AgendaSelector = ({ agendas, selectedAgendas, onAgendaAdd, onAgendaRemove 
       onAgendaAdd(agendaValue);
     }
     setSelectedAgenda('');
+    setResetKey(prev => prev + 1); // Force input to reset
   };
 
   const handleKeyPress = (e) => {
@@ -108,6 +110,7 @@ const AgendaSelector = ({ agendas, selectedAgendas, onAgendaAdd, onAgendaRemove 
 
       <div style={styles.inputRow}>
         <input
+          key={resetKey}
           type="text"
           value={selectedAgenda}
           onChange={(e) => setSelectedAgenda(e.target.value)}

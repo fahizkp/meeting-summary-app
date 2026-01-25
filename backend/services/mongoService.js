@@ -502,10 +502,15 @@ class MongoService {
       ? minutes.map((minute, index) => `${index + 1}. ${minute}`).join('\n')
       : 'തീരുമാനങ്ങളില്ല';
 
+    // Format leave attendees with serial numbers
+    const formattedLeaveAttendees = leaveAttendees.length > 0
+      ? leaveAttendees.map((attendee, index) => `${index + 1}. ${attendee}`).join('\n')
+      : '';
+
     // Build report
     const report = {
       attendees: presentAttendees.join('\n'),
-      leaveAayavar: leaveAttendees.join('\n'),
+      leaveAayavar: formattedLeaveAttendees,
       agenda: formattedAgendas,
       minutes: formattedMinutes,
       qhlsStatus: qhlsReport,

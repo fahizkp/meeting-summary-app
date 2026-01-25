@@ -261,13 +261,54 @@ const AttendeeList = ({ attendees, attendance, onAttendanceChange, onAbsenceReas
             </div>
 
             {isLeave && (
-              <input
-                type="text"
-                placeholder="ലീവ് കാരണം എഴുതുക..."
-                value={currentAttendance.reason || ''}
-                onChange={(e) => onAbsenceReasonChange(attendeeKey, e.target.value)}
-                style={styles.reasonInput}
-              />
+              <div style={{ marginTop: '12px' }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: '8px',
+                }}>
+                  <input
+                    type="checkbox"
+                    id={`leave-not-informed-${index}`}
+                    checked={currentAttendance.leaveNotInformed || false}
+                    onChange={(e) => {
+                      const isChecked = e.target.checked;
+                      onAbsenceReasonChange(attendeeKey, isChecked ? '' : currentAttendance.reason, isChecked);
+                    }}
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      cursor: 'pointer',
+                      accentColor: '#ff7675',
+                    }}
+                  />
+                  <label
+                    htmlFor={`leave-not-informed-${index}`}
+                    style={{
+                      fontSize: '0.9rem',
+                      color: '#616161',
+                      cursor: 'pointer',
+                      userSelect: 'none',
+                    }}
+                  >
+                    ലീവ് അറിയിച്ചിട്ടില്ല
+                  </label>
+                </div>
+                <input
+                  type="text"
+                  placeholder="ലീവ് കാരണം എഴുതുക..."
+                  value={currentAttendance.reason || ''}
+                  onChange={(e) => onAbsenceReasonChange(attendeeKey, e.target.value, currentAttendance.leaveNotInformed)}
+                  disabled={currentAttendance.leaveNotInformed}
+                  required={!currentAttendance.leaveNotInformed}
+                  style={{
+                    ...styles.reasonInput,
+                    opacity: currentAttendance.leaveNotInformed ? 0.5 : 1,
+                    cursor: currentAttendance.leaveNotInformed ? 'not-allowed' : 'text',
+                  }}
+                />
+              </div>
             )}
           </div>
         );

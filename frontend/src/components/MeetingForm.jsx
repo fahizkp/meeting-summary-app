@@ -498,12 +498,13 @@ const MeetingForm = () => {
     });
   };
 
-  const handleAbsenceReasonChange = (attendeeName, reason) => {
+  const handleAbsenceReasonChange = (attendeeName, reason, leaveNotInformed) => {
     setAttendance({
       ...attendance,
       [attendeeName]: {
         ...attendance[attendeeName],
         reason,
+        leaveNotInformed: leaveNotInformed || false,
       },
     });
   };
@@ -656,7 +657,7 @@ const MeetingForm = () => {
 
     // Only include QHLS if there's valid data
     const qhlsSection = qhlsFormatted && qhlsFormatted !== 'QHLS ഡാറ്റയില്ല' && qhlsFormatted.trim()
-      ? [`*QHLS Status:*`, qhlsFormatted]
+      ? [``, ``, `*QHLS Status:*`, qhlsFormatted]
       : [];
 
     // Build meeting role sentences for the end of report
@@ -697,14 +698,18 @@ const MeetingForm = () => {
       meetingData.startTime ? `*തുടങ്ങിയ സമയം:* ${formatTime12h(meetingData.startTime)}` : '',
       meetingData.endTime ? `*അവസാനിച്ച സമയം:* ${formatTime12h(meetingData.endTime)}` : '',
       ``,
+      ``,
       `*പങ്കെടുത്തവർ:*`,
       report.attendees || 'ആരുമില്ല',
+      ``,
       ``,
       `*ലീവ് ആയവർ:*`,
       report.leaveAayavar || 'ആരുമില്ല',
       ``,
+      ``,
       `*അജണ്ടകൾ:*`,
       report.agenda || 'അജണ്ടകളില്ല',
+      ``,
       ``,
       `*തീരുമാനങ്ങൾ:*`,
       report.minutes || 'തീരുമാനങ്ങളില്ല',
@@ -1048,6 +1053,16 @@ const MeetingForm = () => {
     if (!nandhi) {
       alert('ദയവായി നന്ദി പറയുന്നയാളെ തിരഞ്ഞെടുക്കുക');
       return;
+    }
+
+    // Validate leave reasons
+    const attendeesOnLeave = Object.entries(attendance).filter(([key, data]) => data.status === 'leave');
+    for (const [attendeeKey, data] of attendeesOnLeave) {
+      if (!data.leaveNotInformed && (!data.reason || data.reason.trim() === '')) {
+        const [name] = attendeeKey.split('_');
+        alert(`ദയവായി ${name} ന്റെ ലീവ് കാരണം നൽകുക അല്ലെങ്കിൽ "ലീവ് അറിയിച്ചിട്ടില്ല" ചെക്ക് ചെയ്യുക`);
+        return;
+      }
     }
 
     setSubmitting(true);
