@@ -842,4 +842,350 @@ router.get('/dashboard/stats', async (req, res) => {
   }
 });
 
+// ==================== COMMITTEE ROUTES ====================
+
+const Committee = require('../models/Committee');
+const CommitteeRole = require('../models/CommitteeRole');
+const Zone = require('../models/Zone');
+
+/**
+ * GET /api/committees
+ * Get all committee members
+ */
+router.get('/committees', async (req, res) => {
+  try {
+    if (!isMongoConnected()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database not available',
+        message: 'MongoDB is not connected',
+      });
+    }
+
+    const { zoneId } = req.query;
+    let query = {};
+    
+    if (zoneId && zoneId !== 'All') {
+      query.zoneId = zoneId;
+    }
+
+    const committees = await Committee.find(query).sort({ zoneId: 1, roleId: 1 });
+    
+    // Populate role names and zone names
+    const roles = await CommitteeRole.find();
+    const zones = await Zone.find();
+    
+    const roleMap = {};
+    roles.forEach(r => {
+      roleMap[r.roleId] = r.name;
+    });
+    
+    const zoneMap = {};
+    zones.forEach(z => {
+      zoneMap[z.zoneId] = z.name;
+    });
+    
+    const enrichedCommittees = committees.map(c => ({
+      ...c.toObject(),
+      roleName: roleMap[c.roleId] || c.roleId,
+      zoneName: zoneMap[c.zoneId] || c.zoneId,
+    }));
+
+    res.json({
+      success: true,
+      committees: enrichedCommittees,
+    });
+  } catch (error) {
+    console.error('Error in /api/committees:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch committees',
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * GET /api/committee-roles
+ * Get all committee roles for dropdown
+ */
+router.get('/committee-roles', async (req, res) => {
+  try {
+    if (!isMongoConnected()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database not available',
+        message: 'MongoDB is not connected',
+      });
+    }
+
+    const roles = await CommitteeRole.find().sort({ roleId: 1 });
+    
+    res.json({
+      success: true,
+      roles,
+    });
+  } catch (error) {
+    console.error('Error in /api/committee-roles:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch committee roles',
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * POST /api/committees
+ * Create a new committee member
+ */
+router.post('/committees', express.json(), async (req, res) => {
+  try {
+    if (!isMongoConnected()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database not available',
+        message: 'MongoDB is not connected',
+      });
+    }
+
+    const { name, roleId, zoneId, mobile, whatsapp } = req.body;
+
+    // Validation
+    if (!name || !roleId || !zoneId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields',
+        message: 'Name, role, and zone are required',
+      });
+    }
+
+    // Generate committeeId
+    const count = await Committee.countDocuments();
+    const committeeId = `C${String(count + 1).padStart(4, '0')}`;
+
+    const committee = new Committee({
+      committeeId,
+      name,
+      roleId,
+      zoneId,
+      mobile: mobile || '',
+      whatsapp: whatsapp || '',
+    });
+
+    await committee.save();
+
+    res.json({
+      success: true,
+      message: 'Committee member added successfully',
+      committee: committee.toObject(),
+    });
+  } catch (error) {
+    console.error('Error in POST /api/committees:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to add committee member',
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * PUT /api/committees/:committeeId
+ * Update a committee member
+ */
+router.put('/committees/:committeeId', express.json(), async (req, res) => {
+  try {
+    if (!isMongoConnected()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database not available',
+        message: 'MongoDB is not connected',
+      });
+    }
+
+    const { committeeId } = req.params;
+    const { name, roleId, zoneId, mobile, whatsapp } = req.body;
+
+    // Validation
+    if (!name || !roleId || !zoneId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields',
+        message: 'Name, role, and zone are required',
+      });
+    }
+
+    const committee = await Committee.findOneAndUpdate(
+      { committeeId },
+      {
+        name,
+        roleId,
+        zoneId,
+        mobile: mobile || '',
+        whatsapp: whatsapp || '',
+      },
+      { new: true }
+    );
+
+    if (!committee) {
+      return res.status(404).json({
+        success: false,
+        error: 'Committee member not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Committee member updated successfully',
+      committee: committee.toObject(),
+    });
+  } catch (error) {
+    console.error('Error in PUT /api/committees:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update committee member',
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * DELETE /api/committees/:committeeId
+ * Delete a committee member
+ */
+router.delete('/committees/:committeeId', async (req, res) => {
+  try {
+    if (!isMongoConnected()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database not available',
+        message: 'MongoDB is not connected',
+      });
+    }
+
+    const { committeeId } = req.params;
+
+    const committee = await Committee.findOneAndDelete({ committeeId });
+
+    if (!committee) {
+      return res.status(404).json({
+        success: false,
+        error: 'Committee member not found',
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Committee member deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error in DELETE /api/committees:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete committee member',
+      message: error.message,
+    });
+  }
+});
+
+// ==================== QHLS ROUTES ====================
+
+const qhlsService = require('../services/qhlsService');
+
+/**
+ * GET /api/qhls/dashboard
+ * Get complete QHLS dashboard data for a specific week
+ */
+router.get('/qhls/dashboard', async (req, res) => {
+  try {
+    if (!isMongoConnected()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database not available',
+        message: 'MongoDB is not connected',
+      });
+    }
+
+    const weekOffset = parseInt(req.query.weekOffset) || 0;
+    const data = await qhlsService.getDashboardData(weekOffset);
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    console.error('Error in /api/qhls/dashboard:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch QHLS dashboard data',
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * GET /api/qhls/week/:offset
+ * Get QHLS responses for a specific week
+ */
+router.get('/qhls/week/:offset', async (req, res) => {
+  try {
+    if (!isMongoConnected()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database not available',
+        message: 'MongoDB is not connected',
+      });
+    }
+
+    const weekOffset = parseInt(req.params.offset) || 0;
+    const responses = await qhlsService.getQHLSByWeek(weekOffset);
+    const stats = await qhlsService.getQHLSStats(weekOffset);
+
+    res.json({
+      success: true,
+      responses,
+      stats,
+    });
+  } catch (error) {
+    console.error('Error in /api/qhls/week:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch QHLS week data',
+      message: error.message,
+    });
+  }
+});
+
+/**
+ * GET /api/qhls/missing/:offset
+ * Get units without QHLS for a specific week
+ */
+router.get('/qhls/missing/:offset', async (req, res) => {
+  try {
+    if (!isMongoConnected()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database not available',
+        message: 'MongoDB is not connected',
+      });
+    }
+
+    const weekOffset = parseInt(req.params.offset) || 0;
+    const missing = await qhlsService.getMissingUnits(weekOffset);
+
+    res.json({
+      success: true,
+      missing,
+    });
+  } catch (error) {
+    console.error('Error in /api/qhls/missing:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch missing units',
+      message: error.message,
+    });
+  }
+});
+
 module.exports = router;

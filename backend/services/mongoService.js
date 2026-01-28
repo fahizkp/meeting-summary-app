@@ -164,17 +164,17 @@ class MongoService {
   // ==================== ATTENDEES (from Committee + Units) ====================
 
   async getAttendeesByZone(zoneId) {
-    // Get zone info for unit members
+    // Get zone info
     const zoneInfo = await Zone.findOne({ zoneId });
     const currentZoneName = zoneInfo ? zoneInfo.name : '';
 
     const attendees = [];
 
-    // Get committee members (secretariat)
+    // Get committee members ONLY
     const Committee = require('../models/Committee');
     const CommitteeRole = require('../models/CommitteeRole');
     
-    // Fetch generic roles map
+    // Fetch roles map for Malayalam names
     const rolesList = await CommitteeRole.find({});
     const roleMap = {};
     rolesList.forEach(r => { roleMap[r.roleId] = r.name; });
@@ -210,21 +210,8 @@ class MongoService {
       });
     });
 
-    // Get unit members
-    const units = await Unit.find({ zoneId });
-    units.forEach(unit => {
-      if (unit.members) {
-        unit.members.forEach(m => {
-          attendees.push({
-            name: m.name,
-            role: m.role || 'Member',
-            zoneName: currentZoneName,
-            mobile: '',
-            whatsapp: '',
-          });
-        });
-      }
-    });
+    // NOTE: Unit members are no longer included
+    // All meeting participants must be registered in the Committee table
 
     return attendees;
   }

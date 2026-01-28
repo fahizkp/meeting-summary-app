@@ -9,6 +9,7 @@ const AttendanceSchema = new mongoose.Schema({
 
 const QHLSSchema = new mongoose.Schema({
   unit: { type: String, default: '' },
+  hasQhls: { type: Boolean, default: true },
   day: { type: String, default: '' },
   faculty: { type: String, default: '' },
   male: { type: Number, default: 0 },

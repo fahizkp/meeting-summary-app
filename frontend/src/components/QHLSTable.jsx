@@ -5,7 +5,7 @@ const QHLSTable = ({ qhlsData, onQHLSChange, availableUnits = [] }) => {
     ? Array.from(new Set(availableUnits.filter((unit) => unit && unit.trim() !== '')))
     : [];
 
-  const malayalamDays = ['തിങ്കൾ', 'ചൊവ്വ', 'ബുധൻ', 'വ്യാഴം', 'വെള്ളി', 'ശനി'];
+  const malayalamDays = ['ഞായർ', 'തിങ്കൾ', 'ചൊവ്വ', 'ബുധൻ', 'വ്യാഴം', 'വെള്ളി', 'ശനി'];
 
   const handleFieldChange = (index, field, value) => {
     const updatedData = [...qhlsData];

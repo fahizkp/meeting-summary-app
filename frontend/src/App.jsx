@@ -10,6 +10,8 @@ import BottomNavigation from './components/BottomNavigation';
 import Dashboard from './components/Dashboard';
 import UserManagement from './components/UserManagement';
 import HomeRedirect from './components/HomeRedirect';
+import QHLSDashboard from './components/QHLSDashboard';
+import CommitteeManagement from './components/CommitteeManagement';
 
 // Layout component for authenticated pages
 const AuthenticatedLayout = ({ children }) => {
@@ -164,6 +166,26 @@ function App() {
           <ProtectedRoute requiredRole="admin">
             <AuthenticatedLayout>
               <UserManagement />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/qhls"
+        element={
+          <ProtectedRoute requiredAnyRole={['admin', 'district_admin']}>
+            <AuthenticatedLayout>
+              <QHLSDashboard />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/committee"
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <AuthenticatedLayout>
+              <CommitteeManagement />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
