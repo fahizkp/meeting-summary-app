@@ -35,7 +35,7 @@ const AgendaSelector = ({ agendas, selectedAgendas, onAgendaAdd, onAgendaRemove 
       transition: 'all 0.2s ease',
     },
     addBtn: {
-      padding: '14px 24px',
+      padding: '10px 16px',
       background: 'linear-gradient(135deg, #6c5ce7, #5549c7)',
       color: 'white',
       border: 'none',
@@ -44,8 +44,9 @@ const AgendaSelector = ({ agendas, selectedAgendas, onAgendaAdd, onAgendaRemove 
       fontWeight: '700',
       cursor: 'pointer',
       transition: 'all 0.2s ease',
-      minWidth: '56px',
+      width: '48px',
       lineHeight: '1',
+      flexShrink: 0,
     },
     addBtnDisabled: {
       background: '#bdbdbd',
