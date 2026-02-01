@@ -1,0 +1,22 @@
+[
+  {
+    "_id": "695d54f5f9ea79840b62881d",
+    "agendaId": "AGD001",
+    "__v": 0,
+    "createdAt": "2026-01-06T18:31:17.161Z",
+    "isDefault": true,
+    "name": "ROOTS",
+    "order": 0,
+    "updatedAt": "2026-01-06T18:31:17.161Z"
+  },
+  {
+    "_id": "695d54f5f9ea79840b62881f",
+    "agendaId": "AGD002",
+    "__v": 0,
+    "createdAt": "2026-01-06T18:31:17.165Z",
+    "isDefault": true,
+    "name": "QHLS",
+    "order": 1,
+    "updatedAt": "2026-01-06T18:31:17.165Z"
+  }
+]

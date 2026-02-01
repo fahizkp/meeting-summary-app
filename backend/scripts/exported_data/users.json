@@ -1,0 +1,225 @@
+[
+  {
+    "_id": "695ca9d4f9ea79840b624603",
+    "username": "8921186108",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.874Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [
+      "zone_admin",
+      "admin"
+    ],
+    "updatedAt": "2026-01-07T01:27:48.988Z",
+    "zoneAccess": [
+      "1"
+    ]
+  },
+  {
+    "_id": "695ca9d4f9ea79840b624605",
+    "username": "9633909434",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.881Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [],
+    "updatedAt": "2026-01-06T18:31:16.519Z",
+    "zoneAccess": []
+  },
+  {
+    "_id": "695ca9d4f9ea79840b624608",
+    "username": "9496842474",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.894Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [
+      "zone_admin",
+      "district_admin"
+    ],
+    "updatedAt": "2026-01-16T05:50:30.556Z",
+    "zoneAccess": [
+      "7"
+    ]
+  },
+  {
+    "_id": "695ca9d4f9ea79840b62460a",
+    "username": "8594044600",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.898Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [
+      "district_admin"
+    ],
+    "updatedAt": "2026-01-06T18:31:16.533Z",
+    "zoneAccess": []
+  },
+  {
+    "_id": "695ca9d4f9ea79840b62460c",
+    "username": "9446155409",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.902Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [],
+    "updatedAt": "2026-01-06T18:31:16.536Z",
+    "zoneAccess": []
+  },
+  {
+    "_id": "695ca9d4f9ea79840b62460e",
+    "username": "9747380930",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.906Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [],
+    "updatedAt": "2026-01-06T18:31:16.541Z",
+    "zoneAccess": []
+  },
+  {
+    "_id": "695ca9d4f9ea79840b624610",
+    "username": "9645415500",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.910Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [],
+    "updatedAt": "2026-01-06T18:31:16.545Z",
+    "zoneAccess": []
+  },
+  {
+    "_id": "695ca9d4f9ea79840b624612",
+    "username": "9497565375",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.914Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [],
+    "updatedAt": "2026-01-06T18:31:16.554Z",
+    "zoneAccess": []
+  },
+  {
+    "_id": "695ca9d4f9ea79840b624614",
+    "username": "8086469040",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.919Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [],
+    "updatedAt": "2026-01-06T18:31:16.558Z",
+    "zoneAccess": []
+  },
+  {
+    "_id": "695ca9d4f9ea79840b624616",
+    "username": "9946993158",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.922Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [],
+    "updatedAt": "2026-01-06T18:31:16.563Z",
+    "zoneAccess": []
+  },
+  {
+    "_id": "695ca9d4f9ea79840b624618",
+    "username": "9446993783",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.927Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [],
+    "updatedAt": "2026-01-06T18:31:16.568Z",
+    "zoneAccess": []
+  },
+  {
+    "_id": "695ca9d4f9ea79840b62461a",
+    "username": "7025132922",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.930Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [],
+    "updatedAt": "2026-01-06T18:31:16.572Z",
+    "zoneAccess": []
+  },
+  {
+    "_id": "695ca9d4f9ea79840b62461c",
+    "username": "9946780201",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.934Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [],
+    "updatedAt": "2026-01-06T18:31:16.576Z",
+    "zoneAccess": []
+  },
+  {
+    "_id": "695ca9d4f9ea79840b62461e",
+    "username": "9446840636",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.938Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [],
+    "updatedAt": "2026-01-06T18:31:16.579Z",
+    "zoneAccess": []
+  },
+  {
+    "_id": "695ca9d4f9ea79840b624620",
+    "username": "9895987587",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.942Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [],
+    "updatedAt": "2026-01-06T18:31:16.583Z",
+    "zoneAccess": []
+  },
+  {
+    "_id": "695ca9d4f9ea79840b624622",
+    "username": "9747607678",
+    "__v": 0,
+    "createdAt": "2026-01-06T06:21:08.946Z",
+    "districtAccess": [
+      "D001"
+    ],
+    "roles": [],
+    "updatedAt": "2026-01-06T18:31:16.587Z",
+    "zoneAccess": []
+  },
+  {
+    "_id": "696956b497659fbc2418a523",
+    "username": "antigravity",
+    "roles": [
+      "admin",
+      "district_admin",
+      "zone_admin"
+    ],
+    "zoneAccess": [
+      "ALL"
+    ],
+    "districtAccess": [
+      "ALL"
+    ],
+    "isAntiGravity": true,
+    "createdAt": "2026-01-15T21:05:56.165Z",
+    "updatedAt": "2026-01-15T21:05:56.165Z",
+    "__v": 0
+  }
+]

@@ -1,0 +1,56 @@
+[
+  {
+    "_id": "695ce1e8f9ea79840b626a45",
+    "roleId": "CR01",
+    "__v": 0,
+    "createdAt": "2026-01-06T10:20:24.129Z",
+    "englishName": "President",
+    "name": "പ്രസിഡന്റ്",
+    "updatedAt": "2026-01-06T18:31:13.964Z"
+  },
+  {
+    "_id": "695ce1e8f9ea79840b626a48",
+    "roleId": "CR02",
+    "__v": 0,
+    "createdAt": "2026-01-06T10:20:24.145Z",
+    "englishName": "Vice President",
+    "name": "വൈസ് പ്രസിഡന്റ്",
+    "updatedAt": "2026-01-06T18:31:13.980Z"
+  },
+  {
+    "_id": "695ce1e8f9ea79840b626a4b",
+    "roleId": "CR03",
+    "__v": 0,
+    "createdAt": "2026-01-06T10:20:24.152Z",
+    "englishName": "Secretary",
+    "name": "സെക്രെട്ടറി",
+    "updatedAt": "2026-01-06T18:31:13.987Z"
+  },
+  {
+    "_id": "695ce1e8f9ea79840b626a4f",
+    "roleId": "CR04",
+    "__v": 0,
+    "createdAt": "2026-01-06T10:20:24.157Z",
+    "englishName": "Joint Secretary",
+    "name": "ജോയിന്റ് സെക്രട്ടറി",
+    "updatedAt": "2026-01-06T18:31:13.994Z"
+  },
+  {
+    "_id": "695ce1e8f9ea79840b626a53",
+    "roleId": "CR05",
+    "__v": 0,
+    "createdAt": "2026-01-06T10:20:24.163Z",
+    "englishName": "Treasurer",
+    "name": "ട്രെഷറർ",
+    "updatedAt": "2026-01-06T18:31:14.000Z"
+  },
+  {
+    "_id": "695ce1e8f9ea79840b626a57",
+    "roleId": "CR06",
+    "__v": 0,
+    "createdAt": "2026-01-06T10:20:24.169Z",
+    "englishName": "Executive Member",
+    "name": "എക്സിക്യൂട്ടീവ് മെമ്പർ",
+    "updatedAt": "2026-01-06T18:31:14.005Z"
+  }
+]

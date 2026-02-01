@@ -83,10 +83,16 @@ async function migrateZones() {
       const zone = zonesMap.get(zoneId);
 
       // Check if Zone Committee Member (Whitelist based)
-      // Roles: President, Secretary, Treasurer, Vice President, Joint Secretary, Executive Member
-      const zoneLevelRoles = ['President', 'Secretary', 'Treasurer', 'Vice President', 'Joint Secretary', 'Executive Member'];
-      // Also check Malayalam names from constants if needed, but English usually suffices or mapped row[3] is English?
-      // Assuming English roles in Column D based on previous steps.
+      // Check both English and Malayalam role names
+      const zoneLevelRoles = [
+        'President', 'പ്രസിഡന്റ്',
+        'Secretary', 'സെക്രട്ടറി', 'സെക്രെട്ടറി',
+        'Treasurer', 'ട്രെഷറർ',
+        'Vice President', 'വൈസ് പ്രസിഡന്റ്',
+        'Joint Secretary', 'ജോയിന്റ് സെക്രട്ടറി', 'ജോയിന്റ് സെക്രെട്ടറി',
+        'Executive Member', 'എക്സിക്യൂട്ടീവ് മെമ്പർ'
+      ];
+      
       const isCommitteeRole = attendeeName && zoneLevelRoles.some(r => role.toLowerCase().includes(r.toLowerCase()));
 
       if (isCommitteeRole) {

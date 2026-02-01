@@ -1,15 +1,4 @@
 services:
-  mongo:
-    image: mongo:7
-    container_name: meeting-summary-mongo
-    restart: unless-stopped
-    volumes:
-      - mongo-data:/data/db
-    networks:
-      - meeting-summary-internal
-      - infra
-    ports:
-      - "27017:27017"
 
   backend:
     image: ghcr.io/wisdom-youth-mlpe/meeting-summary-backend:latest
@@ -20,8 +9,6 @@ services:
     environment:
       - PORT=3001
       - CORS_ORIGIN=https://meeting.wisdommlpe.site
-    depends_on:
-      - mongo
     networks:
       - meeting-summary-internal
       - infra

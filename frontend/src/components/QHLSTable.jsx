@@ -1,14 +1,21 @@
-import React from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 
-const QHLSTable = ({ qhlsData, onQHLSChange, availableUnits = [] }) => {
+const QHLSTable = React.memo(({ qhlsData, onQHLSChange, availableUnits = [] }) => {
   const filteredUnits = Array.isArray(availableUnits)
     ? Array.from(new Set(availableUnits.filter((unit) => unit && unit.trim() !== '')))
     : [];
 
   const malayalamDays = ['ഞായർ', 'തിങ്കൾ', 'ചൊവ്വ', 'ബുധൻ', 'വ്യാഴം', 'വെള്ളി', 'ശനി'];
 
-  const handleFieldChange = (index, field, value) => {
-    const updatedData = [...qhlsData];
+  // Use ref to store current qhlsData without triggering re-creation of handleFieldChange
+  const qhlsDataRef = useRef(qhlsData);
+  useEffect(() => {
+    qhlsDataRef.current = qhlsData;
+  }, [qhlsData]);
+
+  const handleFieldChange = useCallback((index, field, value) => {
+    // Use ref to get current data without adding qhlsData to dependencies
+    const updatedData = [...qhlsDataRef.current];
     updatedData[index] = {
       ...updatedData[index],
       [field]: value,
@@ -21,7 +28,7 @@ const QHLSTable = ({ qhlsData, onQHLSChange, availableUnits = [] }) => {
       updatedData[index].female = '';
     }
     onQHLSChange(updatedData);
-  };
+  }, [onQHLSChange]); // Only depends on onQHLSChange, NOT qhlsData!
 
   const styles = {
     wrapper: {
@@ -146,9 +153,10 @@ const QHLSTable = ({ qhlsData, onQHLSChange, availableUnits = [] }) => {
                 <div style={styles.mobileInputWrapper}>
                   <label style={styles.mobileLabel}>ഫാക്കൽറ്റി</label>
                   <input
+                    key={`faculty-${index}-${row.faculty}`}
                     type="text"
-                    value={row.faculty || ''}
-                    onChange={(e) => handleFieldChange(index, 'faculty', e.target.value)}
+                    defaultValue={row.faculty || ''}
+                    onBlur={(e) => handleFieldChange(index, 'faculty', e.target.value)}
                     placeholder="ഫാക്കൽറ്റി"
                     style={styles.input}
                   />
@@ -249,9 +257,10 @@ const QHLSTable = ({ qhlsData, onQHLSChange, availableUnits = [] }) => {
                 </td>
                 <td style={styles.td}>
                   <input
+                    key={`faculty-desktop-${index}-${row.faculty}`}
                     type="text"
-                    value={row.faculty || ''}
-                    onChange={(e) => handleFieldChange(index, 'faculty', e.target.value)}
+                    defaultValue={row.faculty || ''}
+                    onBlur={(e) => handleFieldChange(index, 'faculty', e.target.value)}
                     placeholder="ഫാക്കൽറ്റി"
                     disabled={!hasQhls}
                     style={{
@@ -328,6 +337,6 @@ const QHLSTable = ({ qhlsData, onQHLSChange, availableUnits = [] }) => {
       `}</style>
     </div>
   );
-};
+});
 
 export default QHLSTable;

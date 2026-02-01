@@ -1,0 +1,2346 @@
+[
+  {
+    "_id": "695d5e034761c82352e196a7",
+    "meetingId": "MEET-1767726595973",
+    "zoneId": "7",
+    "zoneName": "വണ്ടൂർ",
+    "date": "2026-01-06",
+    "startTime": "00:38",
+    "endTime": "12:38",
+    "agendas": [
+      "ROOTS",
+      "QHLS"
+    ],
+    "minutes": [
+      "l,l;,;l"
+    ],
+    "attendance": [
+      {
+        "name": "ഹാരിസ് മോൻ പി",
+        "role": "ട്രെഷറർ",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ശിഹാബുദ്ദീൻ എൻ",
+        "role": "പ്രസിഡന്റ്",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സുഹൈർ എൻ",
+        "role": "വൈസ് പ്രസിഡന്റ്",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "നജീബ് പി",
+        "role": "വൈസ് പ്രസിഡന്റ്",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "റംസാദ് കെ പി",
+        "role": "സെക്രട്ടറി",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് അജ്മൽ കെ പി",
+        "role": "ജോയിന്റ് സെക്രട്ടറി",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ജുനൈദ് എ പി",
+        "role": "ജോയിന്റ് സെക്രട്ടറി",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഹനീഫ എ പി",
+        "role": "ജോയിന്റ് സെക്രട്ടറി",
+        "status": "present",
+        "reason": ""
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "കൂരാട്",
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "താളിയംകുണ്ട്",
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "തൊടികപ്പുലം",
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "തൊടികപ്പുലം പള്ളിക്കുന്ന്",
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "വണ്ടൂർ",
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "വാണിയമ്പലം",
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "ശാന്തിനഗർ",
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "ഹാരിസ് മോൻ പി",
+    "adhyakshan": "സുഹൈർ എൻ",
+    "nandhi": "ജുനൈദ് എ പി",
+    "sheetName": "",
+    "createdAt": "2026-01-06T19:09:55.982Z",
+    "updatedAt": "2026-01-06T19:09:55.982Z",
+    "__v": 0
+  },
+  {
+    "_id": "69760d11208ca3480382d428",
+    "meetingId": "MEET-1769344273005",
+    "zoneId": "7",
+    "zoneName": "വണ്ടൂർ",
+    "date": "2026-01-16",
+    "startTime": "22:25",
+    "endTime": "22:45",
+    "agendas": [
+      "QHLS",
+      "proface"
+    ],
+    "minutes": [
+      "1"
+    ],
+    "attendance": [
+      {
+        "name": "ഹാരിസ് മോൻ പി",
+        "role": "ട്രെഷറർ",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ശിഹാബുദ്ദീൻ എൻ",
+        "role": "പ്രസിഡന്റ്",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സുഹൈർ എൻ",
+        "role": "വൈസ് പ്രസിഡന്റ്",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "നജീബ് പി",
+        "role": "വൈസ് പ്രസിഡന്റ്",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "റംസാദ് കെ പി",
+        "role": "സെക്രട്ടറി",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് അജ്മൽ കെ പി",
+        "role": "ജോയിന്റ് സെക്രട്ടറി",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ജുനൈദ് എ പി",
+        "role": "ജോയിന്റ് സെക്രട്ടറി",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഹനീഫ എ പി",
+        "role": "ജോയിന്റ് സെക്രട്ടറി",
+        "status": "present",
+        "reason": ""
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "കൂരാട്",
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "താളിയംകുണ്ട്",
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "തൊടികപ്പുലം",
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "തൊടികപ്പുലം പള്ളിക്കുന്ന്",
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "വണ്ടൂർ",
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "വാണിയമ്പലം",
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "ശാന്തിനഗർ",
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "നജീബ് പി",
+    "adhyakshan": "റംസാദ് കെ പി",
+    "nandhi": "സുഹൈർ എൻ",
+    "sheetName": "",
+    "createdAt": "2026-01-25T12:31:13.040Z",
+    "updatedAt": "2026-01-25T12:31:13.040Z",
+    "__v": 0
+  },
+  {
+    "_id": "6976485c1a86463719f14db7",
+    "meetingId": "MEET-1768492299236",
+    "zoneId": "12",
+    "zoneName": "എടക്കര",
+    "date": "2026-01-15",
+    "startTime": "18:50",
+    "endTime": "20:45",
+    "agendas": [
+      "അഹ്‌ലൻ റമളാൻ",
+      "യുവപഥം",
+      "പ്രോഫേസ്",
+      "ട്രീറ്റ്",
+      "വിജ്ഞാന വേദി അവലോകനം"
+    ],
+    "minutes": [
+      "A"
+    ],
+    "attendance": [
+      {
+        "name": "ജിംഷാദ് കെ എ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് നിയാസ് ഖാൻ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "റഷീദ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് ശരീഫ് ടി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സുഹൈർ വി കെ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സുഹൈർ എം",
+        "role": "",
+        "status": "leave",
+        "reason": "Absent"
+      },
+      {
+        "name": "മുഹമ്മദ് ആമീൻ",
+        "role": "",
+        "status": "leave",
+        "reason": "Job"
+      },
+      {
+        "name": "സഹദ് സി",
+        "role": "",
+        "status": "leave",
+        "reason": "നാട്ടിൽ ഇല്ല"
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "എടക്കര",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "കരുനെച്ചി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "മുണ്ട",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "കമ്പളക്കല്ല്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "മണിമൂളി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "നാരോക്കാവ്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Jan14",
+    "createdAt": "2026-01-25T16:44:12.074Z",
+    "updatedAt": "2026-01-25T16:45:20.382Z",
+    "__v": 0
+  },
+  {
+    "_id": "697648611a86463719f14dba",
+    "meetingId": "MEET-1768233272812",
+    "zoneId": "15",
+    "zoneName": "ആനമങ്ങാട്",
+    "date": "2026-01-12",
+    "startTime": "20:30",
+    "endTime": "18:10",
+    "agendas": [
+      "അഹ്ലൻ റമദാൻ",
+      "യുവപദം",
+      "വിജ്ഞാന വേദി അവലോകനം",
+      "പ്രൊഫൈസ്"
+    ],
+    "minutes": [
+      "അഹലൻ റമദാൻ 2026ജനുവരി ഫെബ്രുവരി 10 കരിങ്കല്ല ത്താണിയിൽ വെച്ച് നടക്കും.ഫാക്കൽറ്റി അഷറഫ് അൽ ഹികമി",
+      "യുവപഥം മാർച്ച് 3 ചൊവ്വ താഴേ കോട് വെച്ച് നടക്കും. ഫാക്വൽട്ടി  ഫിറോസ് മുറിയക്കണ്ണി",
+      "പ്രൊഫൈസ് മണ്ഡലത്തിൽ നിന്നും രജിസ്റ്റർ ചെയ്തവരെ വിളിച്ച് അവരേ പ്രോഗ്രാമിൽ പങ്കെടുപ്പിക്കാൻ തീരുമാനിച്ചു."
+    ],
+    "attendance": [
+      {
+        "name": "മുഹമ്മദ് ശരീഫ് പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഫൈസൽ എ കെ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "കുട്ടി മുഹമ്മദ് കെ കെ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "അബ്ദുൽ ഗഫൂർ വി കെ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഫൈസൽ ബാബു കെ സി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഉമ്മർ ഫാറൂഖ് എ വി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ശരീഫ് കെ",
+        "role": "",
+        "status": "leave",
+        "reason": "ഡ്യൂട്ടി"
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "ആനമങ്ങാട്",
+        "hasQhls": true,
+        "day": "ഞയർ ",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "ഒടമല",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "പാറൽ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "താഴേക്കോട്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "മണലായ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Jan07",
+    "createdAt": "2026-01-25T16:44:17.766Z",
+    "updatedAt": "2026-01-25T16:45:20.401Z",
+    "__v": 0
+  },
+  {
+    "_id": "697648651a86463719f14dbd",
+    "meetingId": "MEET-1767975448795",
+    "zoneId": "12",
+    "zoneName": "എടക്കര",
+    "date": "2026-01-09",
+    "startTime": "19:05",
+    "endTime": "21:10",
+    "agendas": [
+      "വിജ്ഞാന വേദി",
+      "പ്രോഫേസ്",
+      "ഓറിയന്റേഷൻ ക്യാമ്പ്",
+      "മറ്റുള്ളവ"
+    ],
+    "minutes": [
+      "നാളെ നടക്കുന്ന മണ്ഡലം വിജ്ഞാന വേദിയുടെ ഭാഗമായി രാവിലെ 7 30ന് ഡോർ to ഡോർ നടത്താൻ തീരുമാനിച്ചു",
+      "നാളെ രാവിലെ 7 മണിക്ക് പരിപാടി നടത്തുന്ന സ്ഥലം വൃത്തിയാക്കാൻ തീരുമാനിച്ചു",
+      "പരിപാടിയുടെ പങ്കാളിത്തം ചാർജുള്ള എല്ലാ ആളുകളും ശാഖയിൽ വിളിച്ച് ഉറപ്പുവരുത്താൻ തീരുമാനിച്ചു. ഓർഗനൈസേഷൻ ഭാഗത്ത് നിന്നുള്ള പങ്കാളിത്തത്തിനായി മണ്ഡലം സെക്രട്ടറി പ്രസിഡണ്ട് എന്നിവരെ വിളിക്കാൻ ശരീഫ് കോക്സിന് ചുമതലപ്പെടുത്തി",
+      "പരിപാടിയുടെ പ്രോഗ്രാം ഷെഡ്യൂൾ ചെയ്തു",
+      "ലൈറ്റ് ആൻഡ് സൗണ്ട് ശരീഫ് മാമാങ്കരയെ ചുമതലപ്പെടുത്തി",
+      "ഇനിയും കാണാനുള്ള പ്രൊഫഷണൽ ആളുകളെ കാണാൻ ബാക്കിയുള്ള ശാഖയിലെ ആളുകളോട് നിർദ്ദേശം നൽകി",
+      "ഓറിയന്റേഷൻ ക്യാമ്പിന്റെ യൂത്തിന്റെ പങ്കാളിത്തം എല്ലാ ശാഖയിലും വിളിച്ച് ഉറപ്പുവരുത്തി"
+    ],
+    "attendance": [
+      {
+        "name": "ജിംഷാദ് കെ എ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് നിയാസ് ഖാൻ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് ശരീഫ് ടി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് ആമീൻ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സുഹൈർ വി കെ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സുഹൈൽ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "അനീസ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "കരീം സർ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "റഷീദ്",
+        "role": "",
+        "status": "leave",
+        "reason": "വീട്ടിൽ ആളില്ല"
+      },
+      {
+        "name": "സുഹൈർ എം",
+        "role": "",
+        "status": "leave",
+        "reason": "Absent"
+      },
+      {
+        "name": "സഹദ് സി",
+        "role": "",
+        "status": "leave",
+        "reason": "നാട്ടിൽ ഇല്ല"
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "എടക്കര",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "കരുനെച്ചി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "മുണ്ട",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "കമ്പളക്കല്ല്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "മണിമൂളി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "നാരോക്കാവ്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Jan07",
+    "createdAt": "2026-01-25T16:44:21.110Z",
+    "updatedAt": "2026-01-25T16:45:20.405Z",
+    "__v": 0
+  },
+  {
+    "_id": "697648671a86463719f14dc0",
+    "meetingId": "MEET-1767797747585",
+    "zoneId": "11",
+    "zoneName": "ചുങ്കത്തറ",
+    "date": "2025-12-31",
+    "startTime": "06:05",
+    "endTime": "06:45",
+    "agendas": [
+      "ROOTS",
+      "QHLS"
+    ],
+    "minutes": [
+      ".absbs",
+      "babana"
+    ],
+    "attendance": [
+      {
+        "name": "അബ്ദുല്ലാഹ് സുഹൈർ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സനൂപ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "നദീർ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "അൻവർ സാദത്ത് സി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "റഷീദ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ജസീൽ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സമീർ കെ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ജംഷീർ പി",
+        "role": "",
+        "status": "leave",
+        "reason": "pani"
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "ചുങ്കത്തറ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "ചാത്തമുണ്ടാ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "പോത്തുകല്ല്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Dec31",
+    "createdAt": "2026-01-25T16:44:23.706Z",
+    "updatedAt": "2026-01-25T16:45:20.409Z",
+    "__v": 0
+  },
+  {
+    "_id": "6976486a1a86463719f14dc3",
+    "meetingId": "MEET-1767722735538",
+    "zoneId": "7",
+    "zoneName": "വണ്ടൂർ",
+    "date": "2026-01-06",
+    "startTime": "23:36",
+    "endTime": "23:36",
+    "agendas": [
+      "ROOTS",
+      "QHLS"
+    ],
+    "minutes": [
+      "afasdfds",
+      "sfasdfds"
+    ],
+    "attendance": [
+      {
+        "name": "ഹാരിസ് മോൻ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ശിഹാബുദ്ദീൻ എൻ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സുഹൈർ എൻ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "റംസാദ് കെ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് അജ്മൽ കെ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ജുനൈദ് എ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഹനീഫ എ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "നജീബ് പി",
+        "role": "",
+        "status": "leave",
+        "reason": "abasdsr"
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "കൂരാട്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "താളിയംകുണ്ട്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "തൊടികപ്പുലം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "തൊടികപ്പുലം പള്ളിക്കുന്ന്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "വണ്ടൂർ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "വാണിയമ്പലം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "ശാന്തിനഗർ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Dec31",
+    "createdAt": "2026-01-25T16:44:26.678Z",
+    "updatedAt": "2026-01-25T16:45:20.413Z",
+    "__v": 0
+  },
+  {
+    "_id": "6976486d1a86463719f14dc6",
+    "meetingId": "MEET-1767721383151",
+    "zoneId": "7",
+    "zoneName": "വണ്ടൂർ",
+    "date": "2026-01-06",
+    "startTime": "23:11",
+    "endTime": "23:40",
+    "agendas": [
+      "ROOTS",
+      "QHLS"
+    ],
+    "minutes": [
+      "good",
+      "enthokke und theerumanam"
+    ],
+    "attendance": [
+      {
+        "name": "ഹാരിസ് മോൻ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ശിഹാബുദ്ദീൻ എൻ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സുഹൈർ എൻ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "റംസാദ് കെ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് അജ്മൽ കെ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ജുനൈദ് എ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഹനീഫ എ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "നജീബ് പി",
+        "role": "",
+        "status": "leave",
+        "reason": "fever"
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "കൂരാട്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "താളിയംകുണ്ട്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "തൊടികപ്പുലം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "തൊടികപ്പുലം പള്ളിക്കുന്ന്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "വണ്ടൂർ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "വാണിയമ്പലം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "ശാന്തിനഗർ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Dec31",
+    "createdAt": "2026-01-25T16:44:29.188Z",
+    "updatedAt": "2026-01-25T16:45:20.416Z",
+    "__v": 0
+  },
+  {
+    "_id": "6976486f1a86463719f14dc9",
+    "meetingId": "MEET-1767720233794",
+    "zoneId": "7",
+    "zoneName": "വണ്ടൂർ",
+    "date": "2026-01-06",
+    "startTime": "22:52",
+    "endTime": "23:52",
+    "agendas": [
+      "ROOTS",
+      "QHLS"
+    ],
+    "minutes": [
+      "qhls",
+      "nsfsfds"
+    ],
+    "attendance": [
+      {
+        "name": "ശിഹാബുദ്ദീൻ എൻ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സുഹൈർ എൻ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "നജീബ് പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "റംസാദ് കെ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് അജ്മൽ കെ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ജുനൈദ് എ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഹനീഫ എ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഹാരിസ് മോൻ പി",
+        "role": "",
+        "status": "leave",
+        "reason": "fever"
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "കൂരാട്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "താളിയംകുണ്ട്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "തൊടികപ്പുലം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "തൊടികപ്പുലം പള്ളിക്കുന്ന്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "വണ്ടൂർ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "വാണിയമ്പലം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "ശാന്തിനഗർ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Dec31",
+    "createdAt": "2026-01-25T16:44:31.743Z",
+    "updatedAt": "2026-01-25T16:45:20.419Z",
+    "__v": 0
+  },
+  {
+    "_id": "697648721a86463719f14dcc",
+    "meetingId": "MEET-1767629100915",
+    "zoneId": "15",
+    "zoneName": "ആനമങ്ങാട്",
+    "date": "2026-01-05",
+    "startTime": "20:15",
+    "endTime": "21:15",
+    "agendas": [
+      "മണ്ഡലം വിജ്ഞാന വേദി",
+      "പ്രൊഫൈസ്",
+      "യുവപഥം",
+      "അഹ്‌ലൻ റമദാൻ"
+    ],
+    "minutes": [
+      "6.1.26 ന് കരിങ്കല്ല ത്താണി യീൽ നടക്കുന്ന വിജ്ഞാന വേദിയുടെ പങ്കാളിത്തത്തിനു വേണ്ടി ശാഖകളിൽ വിളിക്കാൻ തീരുമാനിച്ചു.",
+      "കരിങ്കല്ല്ത്താണി പരിസരത്ത് നോട്ടീസ് വിതരണം ചെയ്യാൻ തീരുമാനിച്ചു",
+      "പ്രൊഫൈസ്സ് PRD വർക്കിന് ശാഖകളിൽ ഇറങ്ങാൻ തീരുമാനിച്ചു.",
+      "യുവപദം റമദാൻ രണ്ടാം വീക്കിൽ നടത്തും",
+      "അഹ് ലൻ റമളാൻ ഫെബ്രുവരി ആദ്യ ആഴ്ചയിൽ നടക്കും."
+    ],
+    "attendance": [
+      {
+        "name": "മുഹമ്മദ് ശരീഫ് പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "അബ്ദുൽ ഗഫൂർ വി കെ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഫൈസൽ ബാബു കെ സി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഉമ്മർ ഫാറൂഖ് എ വി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഫൈസൽ എ കെ",
+        "role": "",
+        "status": "leave",
+        "reason": ""
+      },
+      {
+        "name": "കുട്ടി മുഹമ്മദ് കെ കെ",
+        "role": "",
+        "status": "leave",
+        "reason": ""
+      },
+      {
+        "name": "ശരീഫ് കെ",
+        "role": "",
+        "status": "leave",
+        "reason": ""
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "ആനമങ്ങാട്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "ഒടമല",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "പാറൽ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "താഴേക്കോട്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "മണലായ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Dec31",
+    "createdAt": "2026-01-25T16:44:34.530Z",
+    "updatedAt": "2026-01-25T16:45:20.423Z",
+    "__v": 0
+  },
+  {
+    "_id": "697648901a86463719f14dd0",
+    "meetingId": "MEET-1767197503541",
+    "zoneId": "3",
+    "zoneName": "പാണ്ടിക്കാട്",
+    "date": "2025-12-31",
+    "startTime": "19:30",
+    "endTime": "21:30",
+    "agendas": [
+      "ROOTS",
+      "QHLS"
+    ],
+    "minutes": [
+      "."
+    ],
+    "attendance": [
+      {
+        "name": "മുനീഫ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സക്കറിയ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഷാനിദ് മലയിൽ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സാജിദ് ഇ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സിദ്ധു",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "അജ്മൽ മലയിൽ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "നഹീം റഹ്മാൻ പി കെ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സുഹൈർ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "പാണ്ടിക്കാട്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "ഒറവുംപുറം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "അയനികോട്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "വള്ളിക്കാപറമ്പ്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "ചാത്തങ്ങോട്ടുപുറം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "നെന്മിനി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "കൊടശ്ശേരി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Dec31",
+    "createdAt": "2026-01-25T16:45:04.688Z",
+    "updatedAt": "2026-01-25T16:45:20.427Z",
+    "__v": 0
+  },
+  {
+    "_id": "697648931a86463719f14dd3",
+    "meetingId": "MEET-1767197405114",
+    "zoneId": "15",
+    "zoneName": "ആനമങ്ങാട്",
+    "date": "2025-12-31",
+    "startTime": "20:00",
+    "endTime": "09:30",
+    "agendas": [
+      "ROOTS",
+      "QHLS"
+    ],
+    "minutes": [
+      "ജനുവരി 6 വിജ്ഞാന വേദി കരിങ്കല്ലത്താണി"
+    ],
+    "attendance": [
+      {
+        "name": "മുഹമ്മദ് ശരീഫ് പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഫൈസൽ എ കെ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "അബ്ദുൽ ഗഫൂർ വി കെ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഫൈസൽ ബാബു കെ സി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഉമ്മർ ഫാറൂഖ് എ വി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "കുട്ടി മുഹമ്മദ് കെ കെ",
+        "role": "",
+        "status": "leave",
+        "reason": ""
+      },
+      {
+        "name": "ശരീഫ് കെ",
+        "role": "",
+        "status": "leave",
+        "reason": ""
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "ആനമങ്ങാട്",
+        "hasQhls": true,
+        "day": "ബുധൻ",
+        "faculty": "റിയാസ് മുറിയക്കണി",
+        "male": 25,
+        "female": 15
+      },
+      {
+        "unit": "ഒടമല",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "പാറൽ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "താഴേക്കോട്",
+        "hasQhls": true,
+        "day": "ബുധൻ",
+        "faculty": "ഷരീഫ് കാര ",
+        "male": 25,
+        "female": 15
+      },
+      {
+        "unit": "മണലായ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Dec31",
+    "createdAt": "2026-01-25T16:45:07.805Z",
+    "updatedAt": "2026-01-25T16:45:20.430Z",
+    "__v": 0
+  },
+  {
+    "_id": "697648961a86463719f14dd6",
+    "meetingId": "MEET-1767197292543",
+    "zoneId": "11",
+    "zoneName": "ചുങ്കത്തറ",
+    "date": "2025-12-31",
+    "startTime": "06:05",
+    "endTime": "06:45",
+    "agendas": [
+      "ROOTS",
+      "QHLS"
+    ],
+    "minutes": [
+      "."
+    ],
+    "attendance": [
+      {
+        "name": "അബ്ദുല്ലാഹ് സുഹൈർ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ജംഷീർ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സനൂപ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "നദീർ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "അൻവർ സാദത്ത് സി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "റഷീദ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ജസീൽ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സമീർ കെ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "ചുങ്കത്തറ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "ചാത്തമുണ്ടാ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "പോത്തുകല്ല്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Dec31",
+    "createdAt": "2026-01-25T16:45:10.294Z",
+    "updatedAt": "2026-01-25T16:45:20.434Z",
+    "__v": 0
+  },
+  {
+    "_id": "697648981a86463719f14dd9",
+    "meetingId": "MEET-1767197198000",
+    "zoneId": "12",
+    "zoneName": "എടക്കര",
+    "date": "2025-12-31",
+    "startTime": "19:00",
+    "endTime": "22:00",
+    "agendas": [
+      "ROOTS",
+      "QHLS"
+    ],
+    "minutes": [
+      "Ffc"
+    ],
+    "attendance": [
+      {
+        "name": "ജിംഷാദ് കെ എ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് നിയാസ് ഖാൻ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "റഷീദ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് ശരീഫ് ടി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സുഹൈർ എം",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് ആമീൻ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സഹദ് സി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സുഹൈർ വി കെ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "എടക്കര",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "കരുനെച്ചി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "മുണ്ട",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "കമ്പളക്കല്ല്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "മണിമൂളി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "നാരോക്കാവ്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Dec31",
+    "createdAt": "2026-01-25T16:45:12.732Z",
+    "updatedAt": "2026-01-25T16:45:20.437Z",
+    "__v": 0
+  },
+  {
+    "_id": "6976489b1a86463719f14ddc",
+    "meetingId": "MEET-1767197189383",
+    "zoneId": "2",
+    "zoneName": "പെരിന്തൽമണ്ണ",
+    "date": "2025-12-31",
+    "startTime": "21:33",
+    "endTime": "22:33",
+    "agendas": [
+      "QHLS",
+      "Proface"
+    ],
+    "minutes": [
+      "qhls",
+      "vika",
+      "abcd"
+    ],
+    "attendance": [
+      {
+        "name": "അനീസ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "അത്തീഫ് ആർ എം",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഹാരിഫ് ഖാൻ ഐ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "നിസാർ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "അസ്‌ലം എസ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് നദീം",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഹബീബ് റഹ്മാൻ കെ പി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "Dr. മുഹമ്മദ് റിനാസ്",
+        "role": "",
+        "status": "leave",
+        "reason": ""
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "പെരിന്തൽമണ്ണ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "കുന്നപ്പള്ളി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "എരവിമംഗലം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "മാനത്തുമംഗലം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "പൊന്നിയാക്കുറുശ്ശി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "ജൂബിലി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "ലെമൺ വാലി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Dec31",
+    "createdAt": "2026-01-25T16:45:15.294Z",
+    "updatedAt": "2026-01-25T16:45:20.441Z",
+    "__v": 0
+  },
+  {
+    "_id": "6976489d1a86463719f14ddf",
+    "meetingId": "MEET-1767186884553",
+    "zoneId": "3",
+    "zoneName": "പാണ്ടിക്കാട്",
+    "date": "2025-12-30",
+    "startTime": "20:30",
+    "endTime": "22:30",
+    "agendas": [
+      "Proface",
+      "nerpadham",
+      "working fund",
+      "വിക്ജാന വേദി"
+    ],
+    "minutes": [
+      "Proface- PRD work and Registration plan ചെയ്തു.. വെള്ളി ഇറങ്ങും\nVisit ചെയ്യാനുള്ള Institute and other proffesionals",
+      "നേർപദം വരി ചേർക്കൽ ചർച്ചയും",
+      "ചെയ്യാത്തവരെ ശാഖയിൽക് ഇടപെടാനും തീരുമനിച്ചു",
+      "ജില്ലാ Receipt എത്തിക്കാത്ത ശാഖായിലേക്ക് എത്തിക്കാൻ treasurer ഏല്പിച്ചു",
+      "വിജ്ഞാന വേദി ജനുവരി 16 ന് ഒറവമ്പുറം- മുസ്തഫ മദനി \nPoster ഇറക്കാനും ഞായർ സ്കോട് ഉറങ്ങാനും ധാരണയായി"
+    ],
+    "attendance": [
+      {
+        "name": "മുനീഫ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഷാനിദ് മലയിൽ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സാജിദ് ഇ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സിദ്ധു",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "അജ്മൽ മലയിൽ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സുഹൈർ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സക്കറിയ",
+        "role": "",
+        "status": "leave",
+        "reason": "personal"
+      },
+      {
+        "name": "നഹീം റഹ്മാൻ പി കെ",
+        "role": "",
+        "status": "leave",
+        "reason": "personal"
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "പാണ്ടിക്കാട്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "ഒറവുംപുറം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "അയനികോട്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "വള്ളിക്കാപറമ്പ്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "ചാത്തങ്ങോട്ടുപുറം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "നെന്മിനി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "കൊടശ്ശേരി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Dec24",
+    "createdAt": "2026-01-25T16:45:17.383Z",
+    "updatedAt": "2026-01-25T16:45:20.445Z",
+    "__v": 0
+  },
+  {
+    "_id": "6976489f1a86463719f14de2",
+    "meetingId": "MEET-1766251285280",
+    "zoneId": "1",
+    "zoneName": "മമ്പാട്",
+    "date": "2025-12-17",
+    "startTime": "22:50",
+    "endTime": "22:52",
+    "agendas": [
+      "ROOTS"
+    ],
+    "minutes": [
+      "123",
+      "456"
+    ],
+    "attendance": [
+      {
+        "name": "ആഷിക് സൽമാൻ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഹാരിസ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സഹദ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഫിറോസ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഷാഫി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുർഷാദ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "നിസാർ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "Fahiz KP",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഇർഷാദ്",
+        "role": "",
+        "status": "leave",
+        "reason": "fever"
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "മമ്പാട്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "sameer",
+        "male": 10,
+        "female": null
+      },
+      {
+        "unit": "കാട്ടുമുണ്ട",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "nisar",
+        "male": 20,
+        "female": null
+      },
+      {
+        "unit": "പുള്ളിപ്പാടം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "പന്തലിങ്ങൽ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "വടപുറം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Dec17",
+    "createdAt": "2026-01-25T16:45:19.026Z",
+    "updatedAt": "2026-01-25T16:45:20.449Z",
+    "__v": 0
+  },
+  {
+    "_id": "697648a01a86463719f14de5",
+    "meetingId": "MEET-1765953680417",
+    "zoneId": "1",
+    "zoneName": "മമ്പാട്",
+    "date": "2025-11-18",
+    "startTime": "20:10",
+    "endTime": "21:10",
+    "agendas": [
+      "ROOTS",
+      "QHLS"
+    ],
+    "minutes": [
+      "123",
+      "456"
+    ],
+    "attendance": [
+      {
+        "name": "ആഷിക് സൽമാൻ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഇർഷാദ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഹാരിസ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സഹദ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഫിറോസ്",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "ഷാഫി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "നിസാർ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുർഷാദ്",
+        "role": "",
+        "status": "leave",
+        "reason": "Fever"
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "മമ്പാട്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "കാട്ടുമുണ്ട",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "പുള്ളിപ്പാടം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "പന്തലിങ്ങൽ",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "വടപുറം",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Nov12",
+    "createdAt": "2026-01-25T16:45:20.305Z",
+    "updatedAt": "2026-01-25T16:45:20.452Z",
+    "__v": 0
+  },
+  {
+    "_id": "697648b52af88b4e58faad70",
+    "meetingId": "MEET-1767285960429",
+    "zoneId": "12",
+    "zoneName": "എടക്കര",
+    "date": "2026-01-01",
+    "startTime": "18:55",
+    "endTime": "20:15",
+    "agendas": [
+      "Proface",
+      "വിജ്ഞാന വേദി",
+      "അഹ്ലൻ  റമദാൻ",
+      "യുവപഥം"
+    ],
+    "minutes": [
+      "പ്രൊഫൈസിനുള്ള രജിസ്ട്രേഷന് വേണ്ടി ആളുകളെ നേരിൽ കാണുന്നതിനായി വെള്ളി ശനി ഞായർ ദിവസങ്ങളിൽ എല്ലാ ശാഖകളിലും ഇറങ്ങാൻ തീരുമാനിച്ചു",
+      "യുവപദം  തീയതി കണ്ടു27-2-26. ഫാക്കൽട്ടിയെ കണ്ടെത്തുന്നതിന് ജിംഷാദ് സലഫിയെ ഏൽപ്പിച്ചു",
+      "അഹ്‌ലൻ റമദാൻ തീയതി 14-2-26. കണ്ടു",
+      "നാരോക്കാവു ശാഖയിൽ വച്ച് നടത്തുന്ന ഈ മാസത്തെ വിജ്ഞാന വേദിയിൽ ഡോർ ടു ഡോർ നടത്തുന്നതിന് മണ്ഡലം ഭാരവാഹികളെ കൂടി ചുമതലപ്പെടുത്തി.\n\n ഈ പരിപാടിയിലേക്ക് വരുന്ന തിങ്കളാഴ്ച സംയുക്ത സെക്രട്ടറിയേറ്റ് വിളിക്കാൻ തീരുമാനിച്ചു.\n പരിപാടിയുടെ പോസ്റ്റർ അടിക്കുന്നതിനായി സുഹൈറിനെ ചുമതലപ്പെടുത്തി"
+    ],
+    "attendance": [
+      {
+        "name": "ജിംഷാദ് കെ എ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് ശരീഫ് ടി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സുഹൈർ എം",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സഹദ് സി",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "സുഹൈർ വി കെ",
+        "role": "",
+        "status": "present",
+        "reason": ""
+      },
+      {
+        "name": "മുഹമ്മദ് നിയാസ് ഖാൻ",
+        "role": "",
+        "status": "leave",
+        "reason": "പനി"
+      },
+      {
+        "name": "റഷീദ്",
+        "role": "",
+        "status": "leave",
+        "reason": "അറിയിച്ചില്ല"
+      },
+      {
+        "name": "മുഹമ്മദ് ആമീൻ",
+        "role": "",
+        "status": "leave",
+        "reason": ""
+      }
+    ],
+    "qhls": [
+      {
+        "unit": "എടക്കര",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "കരുനെച്ചി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "മുണ്ട",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "കമ്പളക്കല്ല്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "മണിമൂളി",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      },
+      {
+        "unit": "നാരോക്കാവ്",
+        "hasQhls": true,
+        "day": "",
+        "faculty": "",
+        "male": null,
+        "female": null
+      }
+    ],
+    "swagatham": "",
+    "adhyakshan": "",
+    "nandhi": "",
+    "sheetName": "Dec31",
+    "createdAt": "2026-01-25T16:45:41.249Z",
+    "updatedAt": "2026-01-25T16:45:41.364Z",
+    "__v": 0
+  }
+]

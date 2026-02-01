@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getZones, getAttendees, getAgendas, saveMeeting, getMeetingReport, updateMeeting, checkWeekMeeting } from '../services/api';
 import { getAccessibleZones, hasAnyRole, getUser, getUserAccessConfig, hasRole } from '../services/auth';
@@ -71,6 +71,7 @@ const MeetingForm = () => {
   const selectedAgendasHydratedRef = useRef(false);
   const draftDataRef = useRef(null);
   const editDataRef = useRef(null);
+  const prevZoneRef = useRef(null);
 
   const clearDraftStorage = () => {
     try {
@@ -432,6 +433,7 @@ const MeetingForm = () => {
   }, [zones]);
 
   useEffect(() => {
+    // Handle draft data restoration
     if (
       savedZoneRef.current === selectedZone &&
       qhlsDraftRef.current &&
@@ -439,10 +441,16 @@ const MeetingForm = () => {
     ) {
       setQhlsData(qhlsDraftRef.current);
       qhlsDraftRef.current = null;
-    } else {
-      setQhlsData(buildQhlsRows(zoneUnits));
+      prevZoneRef.current = selectedZone;
+      return;
     }
-  }, [zoneUnits, selectedZone]);
+
+    // Only rebuild if the zone actually changed
+    if (prevZoneRef.current !== selectedZone) {
+      setQhlsData(buildQhlsRows(zoneUnits));
+      prevZoneRef.current = selectedZone;
+    }
+  }, [selectedZone, zoneUnits]);
 
   const handleZoneChange = (zoneId) => {
     setSelectedZone(zoneId);
@@ -551,9 +559,9 @@ const MeetingForm = () => {
     setSelectedAgendas(selectedAgendas.filter((_, i) => i !== index));
   };
 
-  const handleQHLSChange = (data) => {
+  const handleQHLSChange = useCallback((data) => {
     setQhlsData(data);
-  };
+  }, []);
 
   // Persist form draft whenever relevant state changes
   useEffect(() => {
