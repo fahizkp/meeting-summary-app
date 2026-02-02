@@ -782,10 +782,15 @@ const MeetingForm = () => {
       color: #000;
     `;
 
-    // Format attendees with serial numbers
+    // Format attendees with serial numbers (only if not already numbered)
     const formatWithSerialNumbers = (text) => {
       if (!text || text === 'ആരുമില്ല') return 'ആരുമില്ല';
       const lines = text.split('\n').filter(line => line.trim());
+      // Check if lines already have serial numbers (from backend)
+      const hasSerialNumbers = lines.length > 0 && /^\d+\./.test(lines[0]);
+      if (hasSerialNumbers) {
+        return text; // Already formatted, return as-is to preserve brackets
+      }
       return lines.map((line, index) => `${index + 1}. ${line}`).join('\n');
     };
 
@@ -1073,6 +1078,16 @@ const MeetingForm = () => {
       }
     }
 
+    // Validate QHLS data - if hasQhls is true, at least one field must be filled
+    const qhlsWithCheckbox = qhlsData.filter(row => row.hasQhls !== false);
+    for (const row of qhlsWithCheckbox) {
+      const hasData = row.day || row.faculty || row.male || row.female;
+      if (!hasData) {
+        alert(`QHLS ചെക്ക് ചെയ്തിട്ടുള്ള ${row.unit} യൂണിറ്റിന് ദയവായി QHLS ഡാറ്റ നൽകുക`);
+        return;
+      }
+    }
+
     setSubmitting(true);
 
     try {
@@ -1108,6 +1123,7 @@ const MeetingForm = () => {
             role: role || '',
             status: data.status,
             reason: data.reason || '',
+            leaveNotInformed: data.leaveNotInformed || false,
           };
         }),
         qhls: qhlsData.filter(row => row.unit || row.day || row.faculty || row.male || row.female),
@@ -1154,10 +1170,14 @@ const MeetingForm = () => {
         // Reset QHLS data but keep units
         setQhlsData(buildQhlsRows());
       } else {
-        setError('മീറ്റിംഗ് സംഗ്രഹം സേവ് ചെയ്യുന്നതിൽ പിശക് (Error saving meeting summary)');
+        const errorMsg = 'മീറ്റിംഗ് സംഗ്രഹം സേവ് ചെയ്യുന്നതിൽ പിശക് (Error saving meeting summary)';
+        setError(errorMsg);
+        alert(errorMsg);
       }
     } catch (err) {
-      setError('മീറ്റിംഗ് സംഗ്രഹം സേവ് ചെയ്യുന്നതിൽ പിശക് (Error saving meeting summary): ' + err.message);
+      const errorMsg = 'മീറ്റിംഗ് സംഗ്രഹം സേവ് ചെയ്യുന്നതിൽ പിശക് (Error saving meeting summary): ' + err.message;
+      setError(errorMsg);
+      alert(errorMsg);
     } finally {
       setSubmitting(false);
     }
@@ -1404,6 +1424,44 @@ const MeetingForm = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Loading Overlay */}
+      {submitting && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+        }}>
+          <div style={{
+            width: '60px',
+            height: '60px',
+            border: '5px solid #f3f3f3',
+            borderTop: '5px solid #3498db',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+          }}></div>
+          <p style={{
+            color: 'white',
+            marginTop: '20px',
+            fontSize: '18px',
+            fontWeight: '600',
+          }}>സേവ് ചെയ്യുന്നു...</p>
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
         </div>
       )}
     </div>

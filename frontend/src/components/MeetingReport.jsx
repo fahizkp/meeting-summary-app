@@ -95,7 +95,7 @@ const MeetingReport = () => {
           meetingId,
           ...response.meetingData,
         }));
-        navigate('/', {
+        navigate('/form', {
           state: {
             editMeetingData: {
               meetingId,

@@ -164,9 +164,10 @@ const QHLSTable = React.memo(({ qhlsData, onQHLSChange, availableUnits = [] }) =
                 <div style={styles.mobileInputWrapper}>
                   <label style={styles.mobileLabel}>പുരുഷന്മാർ</label>
                   <input
+                    key={`male-${index}-${row.male}`}
                     type="number"
-                    value={row.male || ''}
-                    onChange={(e) => {
+                    defaultValue={row.male || ''}
+                    onBlur={(e) => {
                       const val = e.target.value;
                       if (val === '' || (!isNaN(val) && parseInt(val) >= 0 && parseInt(val) <= 1000)) {
                         handleFieldChange(index, 'male', val);
@@ -181,9 +182,10 @@ const QHLSTable = React.memo(({ qhlsData, onQHLSChange, availableUnits = [] }) =
                 <div style={styles.mobileInputWrapper}>
                   <label style={styles.mobileLabel}>സ്ത്രീകൾ</label>
                   <input
+                    key={`female-${index}-${row.female}`}
                     type="number"
-                    value={row.female || ''}
-                    onChange={(e) => {
+                    defaultValue={row.female || ''}
+                    onBlur={(e) => {
                       const val = e.target.value;
                       if (val === '' || (!isNaN(val) && parseInt(val) >= 0 && parseInt(val) <= 1000)) {
                         handleFieldChange(index, 'female', val);
@@ -271,9 +273,10 @@ const QHLSTable = React.memo(({ qhlsData, onQHLSChange, availableUnits = [] }) =
                 </td>
                 <td style={styles.td}>
                   <input
+                    key={`male-desktop-${index}-${row.male}`}
                     type="number"
-                    value={row.male || ''}
-                    onChange={(e) => {
+                    defaultValue={row.male || ''}
+                    onBlur={(e) => {
                       const val = e.target.value;
                       if (val === '' || (!isNaN(val) && parseInt(val) >= 0 && parseInt(val) <= 1000)) {
                         handleFieldChange(index, 'male', val);
@@ -292,9 +295,10 @@ const QHLSTable = React.memo(({ qhlsData, onQHLSChange, availableUnits = [] }) =
                 </td>
                 <td style={styles.td}>
                   <input
+                    key={`female-desktop-${index}-${row.female}`}
                     type="number"
-                    value={row.female || ''}
-                    onChange={(e) => {
+                    defaultValue={row.female || ''}
+                    onBlur={(e) => {
                       const val = e.target.value;
                       if (val === '' || (!isNaN(val) && parseInt(val) >= 0 && parseInt(val) <= 1000)) {
                         handleFieldChange(index, 'female', val);

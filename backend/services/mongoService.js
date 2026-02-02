@@ -447,7 +447,10 @@ class MongoService {
         if (item.status === 'present') {
           presentAttendees.push(name);
         } else if (item.status === 'leave') {
-          const reason = item.reason ? ` (${item.reason})` : '';
+          // Check if leave was not informed
+          const reason = item.leaveNotInformed 
+            ? ' (ലീവ് അറിയിച്ചിട്ടില്ല)' 
+            : (item.reason ? ` (${item.reason})` : '');
           leaveAttendees.push(`${name}${reason}`);
         }
       });
